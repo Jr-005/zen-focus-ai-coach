@@ -7,6 +7,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Send, Mic, MicOff, Brain, Lightbulb, Target, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface Message {
   id: string;
@@ -22,20 +25,66 @@ interface AIAssistantProps {
 }
 
 export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'ai',
-      content: "Hello! I'm your AI productivity coach. I'm here to help you plan your goals, stay motivated, and maximize your focus. What would you like to work on today?",
-      timestamp: new Date(),
-      category: 'coaching'
-    }
-  ]);
-  
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [loading, setLoading] = useState(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (user) {
+      loadConversationHistory();
+    }
+  }, [user]);
+
+  const loadConversationHistory = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ai_conversations')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      
+      if (data.length === 0) {
+        // Add welcome message if no conversation history
+        const welcomeMessage: Message = {
+          id: '1',
+          type: 'ai',
+          content: "Hello! I'm your AI productivity coach. I'm here to help you plan your goals, stay motivated, and maximize your focus. What would you like to work on today?",
+          timestamp: new Date(),
+          category: 'coaching'
+        };
+        setMessages([welcomeMessage]);
+        
+        // Save welcome message to database
+        await supabase
+          .from('ai_conversations')
+          .insert({
+            user_id: user?.id,
+            message_type: 'ai',
+            content: welcomeMessage.content,
+            category: 'coaching',
+          });
+      } else {
+        const formattedMessages = data.map(msg => ({
+          id: msg.id,
+          type: msg.message_type as 'user' | 'ai',
+          content: msg.content,
+          timestamp: new Date(msg.created_at),
+          category: msg.category as Message['category'],
+        }));
+        setMessages(formattedMessages);
+      }
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const aiResponses = {
     planning: [
@@ -104,7 +153,7 @@ export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) =
   };
 
   const sendMessage = async (content: string) => {
-    if (!content.trim()) return;
+    if (!content.trim() || !user) return;
 
     // Add user message
     const userMessage: Message = {
@@ -118,8 +167,21 @@ export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) =
     setInputMessage('');
     setIsTyping(true);
 
+    // Save user message to database
+    try {
+      await supabase
+        .from('ai_conversations')
+        .insert({
+          user_id: user.id,
+          message_type: 'user',
+          content: content.trim(),
+        });
+    } catch (error) {
+      console.error('Error saving user message:', error);
+    }
+
     // Simulate AI thinking time
-    setTimeout(() => {
+    setTimeout(async () => {
       const { content: aiContent, category } = simulateAIResponse(content);
       
       const aiMessage: Message = {
@@ -132,6 +194,20 @@ export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) =
 
       setMessages(prev => [...prev, aiMessage]);
       setIsTyping(false);
+      
+      // Save AI message to database
+      try {
+        await supabase
+          .from('ai_conversations')
+          .insert({
+            user_id: user.id,
+            message_type: 'ai',
+            content: aiContent,
+            category,
+          });
+      } catch (error) {
+        console.error('Error saving AI message:', error);
+      }
     }, 1000 + Math.random() * 2000); // 1-3 seconds delay
   };
 
@@ -158,6 +234,16 @@ export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) =
       default: return 'bg-muted text-muted-foreground';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-4 h-[600px] flex flex-col">
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 h-[600px] flex flex-col">

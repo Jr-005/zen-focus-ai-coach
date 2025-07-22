@@ -5,6 +5,9 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Play, Pause, RotateCcw, Coffee, Brain, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface FocusSession {
   id: string;
@@ -15,12 +18,14 @@ interface FocusSession {
 }
 
 export const FocusTimer = () => {
+  const { user } = useAuth();
   const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
   const [isActive, setIsActive] = useState(false);
   const [sessionType, setSessionType] = useState<'focus' | 'short-break' | 'long-break'>('focus');
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
   const [currentSession, setCurrentSession] = useState(1);
   const [totalSessions, setTotalSessions] = useState(4);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -75,8 +80,25 @@ export const FocusTimer = () => {
     }
   }, [timeLeft, isActive]);
 
-  const handleSessionComplete = () => {
+  const handleSessionComplete = async () => {
     setIsActive(false);
+    
+    // Save completed session to database
+    if (currentSessionId && user) {
+      try {
+        await supabase
+          .from('focus_sessions')
+          .update({ 
+            completed: true, 
+            completed_at: new Date().toISOString() 
+          })
+          .eq('id', currentSessionId);
+        
+        toast.success(`${sessionType === 'focus' ? 'Focus' : 'Break'} session completed!`);
+      } catch (error) {
+        console.error('Error updating session:', error);
+      }
+    }
     
     if (sessionType === 'focus') {
       setSessionsCompleted(prev => prev + 1);
@@ -96,6 +118,8 @@ export const FocusTimer = () => {
       setTimeLeft(sessionDurations.focus);
     }
 
+    setCurrentSessionId(null);
+
     // Play completion sound (browser notification)
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(`${sessionType === 'focus' ? 'Focus' : 'Break'} session complete!`, {
@@ -105,13 +129,37 @@ export const FocusTimer = () => {
     }
   };
 
-  const toggleTimer = () => {
+  const toggleTimer = async () => {
+    if (!isActive && user) {
+      // Starting a new session - create database record
+      try {
+        const { data, error } = await supabase
+          .from('focus_sessions')
+          .insert({
+            user_id: user.id,
+            session_type: sessionType,
+            duration_minutes: Math.floor(sessionDurations[sessionType] / 60),
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        setCurrentSessionId(data.id);
+        toast.success(`${sessionType} session started`);
+      } catch (error) {
+        console.error('Error creating session:', error);
+        toast.error('Failed to start session');
+        return;
+      }
+    }
+    
     setIsActive(!isActive);
   };
 
   const resetTimer = () => {
     setIsActive(false);
     setTimeLeft(sessionDurations[sessionType]);
+    setCurrentSessionId(null);
   };
 
   const changeSessionType = (type: 'focus' | 'short-break' | 'long-break') => {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -8,6 +8,9 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Target, Calendar, TrendingUp, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface Goal {
   id: string;
@@ -21,28 +24,9 @@ interface Goal {
 }
 
 export const GoalTracker = () => {
-  const [goals, setGoals] = useState<Goal[]>([
-    {
-      id: '1',
-      title: 'Master Mindfulness Practice',
-      description: 'Develop a consistent daily meditation practice for mental clarity and stress reduction',
-      category: 'health',
-      targetDate: '2024-12-31',
-      progress: 35,
-      milestones: ['Complete 30-day meditation challenge', 'Join local meditation group', 'Read 3 mindfulness books'],
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      title: 'Launch Side Project',
-      description: 'Build and launch a productivity app to help others achieve their goals',
-      category: 'career',
-      targetDate: '2024-08-15',
-      progress: 60,
-      milestones: ['Complete MVP', 'Gather user feedback', 'Launch beta version'],
-      createdAt: new Date(),
-    },
-  ]);
+  const { user } = useAuth();
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [newGoal, setNewGoal] = useState({
     title: '',
@@ -55,29 +39,109 @@ export const GoalTracker = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
 
-  const addGoal = () => {
-    if (!newGoal.title.trim()) return;
+  useEffect(() => {
+    if (user) {
+      fetchGoals();
+      setupRealtimeSubscription();
+    }
+  }, [user]);
 
-    const goal: Goal = {
-      id: Date.now().toString(),
-      title: newGoal.title,
-      description: newGoal.description,
-      category: newGoal.category,
-      targetDate: newGoal.targetDate,
-      progress: 0,
-      milestones: newGoal.milestones.filter(m => m.trim()),
-      createdAt: new Date(),
+  const fetchGoals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      const formattedGoals = data.map(goal => ({
+        id: goal.id,
+        title: goal.title,
+        description: goal.description,
+        category: goal.category as Goal['category'],
+        targetDate: goal.target_date,
+        progress: goal.progress,
+        milestones: goal.milestones || [],
+        createdAt: new Date(goal.created_at),
+      }));
+      
+      setGoals(formattedGoals);
+    } catch (error) {
+      console.error('Error fetching goals:', error);
+      toast.error('Failed to load goals');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setupRealtimeSubscription = () => {
+    const subscription = supabase
+      .channel('goals_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'goals', filter: `user_id=eq.${user?.id}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newGoal = {
+              id: payload.new.id,
+              title: payload.new.title,
+              description: payload.new.description,
+              category: payload.new.category as Goal['category'],
+              targetDate: payload.new.target_date,
+              progress: payload.new.progress,
+              milestones: payload.new.milestones || [],
+              createdAt: new Date(payload.new.created_at),
+            };
+            setGoals(prev => [newGoal, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            setGoals(prev => prev.map(goal => 
+              goal.id === payload.new.id 
+                ? { ...goal, progress: payload.new.progress }
+                : goal
+            ));
+          } else if (payload.eventType === 'DELETE') {
+            setGoals(prev => prev.filter(goal => goal.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
     };
+  };
 
-    setGoals([goal, ...goals]);
-    setNewGoal({
-      title: '',
-      description: '',
-      category: 'personal',
-      targetDate: '',
-      milestones: [''],
-    });
-    setShowAddForm(false);
+  const addGoal = async () => {
+    if (!newGoal.title.trim() || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from('goals')
+        .insert({
+          user_id: user.id,
+          title: newGoal.title,
+          description: newGoal.description,
+          category: newGoal.category,
+          target_date: newGoal.targetDate || null,
+          milestones: newGoal.milestones.filter(m => m.trim()),
+        });
+
+      if (error) throw error;
+      
+      setNewGoal({
+        title: '',
+        description: '',
+        category: 'personal',
+        targetDate: '',
+        milestones: [''],
+      });
+      setShowAddForm(false);
+      toast.success('Goal created successfully');
+    } catch (error) {
+      console.error('Error adding goal:', error);
+      toast.error('Failed to create goal');
+    }
   };
 
   const generateAISuggestions = () => {
@@ -130,6 +194,16 @@ export const GoalTracker = () => {
       setNewGoal({ ...newGoal, milestones: updated });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

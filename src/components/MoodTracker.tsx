@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -6,6 +6,9 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Smile, Frown, Meh, Sun, Cloud, CloudRain, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface MoodEntry {
   mood: string;
@@ -15,9 +18,42 @@ interface MoodEntry {
 }
 
 export const MoodTracker = () => {
+  const { user } = useAuth();
   const [currentMood, setCurrentMood] = useState<MoodEntry | null>(null);
   const [energy, setEnergy] = useState([70]);
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchLatestMood();
+    }
+  }, [user]);
+
+  const fetchLatestMood = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('mood_entries')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows returned"
+      
+      if (data) {
+        setCurrentMood({
+          mood: data.mood,
+          energy: data.energy_level,
+          timestamp: new Date(data.created_at),
+          emoji: moods.find(m => m.id === data.mood)?.emoji || '😐',
+        });
+        setEnergy([data.energy_level]);
+      }
+    } catch (error) {
+      console.error('Error fetching mood:', error);
+    }
+  };
 
   const moods = [
     { id: 'amazing', label: 'Amazing', emoji: '🚀', color: 'text-success' },
@@ -28,19 +64,34 @@ export const MoodTracker = () => {
     { id: 'stressed', label: 'Stressed', emoji: '😰', color: 'text-destructive' },
   ];
 
-  const updateMood = (mood: typeof moods[0]) => {
-    const moodEntry: MoodEntry = {
-      mood: mood.id,
-      energy: energy[0],
-      timestamp: new Date(),
-      emoji: mood.emoji,
-    };
-    
-    setCurrentMood(moodEntry);
-    setIsOpen(false);
-    
-    // Here you would typically save to a database or state management system
-    console.log('Mood updated:', moodEntry);
+  const updateMood = async (mood: typeof moods[0]) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('mood_entries')
+        .insert({
+          user_id: user.id,
+          mood: mood.id as any, // Type matches the mood_type enum
+          energy_level: energy[0],
+        });
+
+      if (error) throw error;
+      
+      const moodEntry: MoodEntry = {
+        mood: mood.id,
+        energy: energy[0],
+        timestamp: new Date(),
+        emoji: mood.emoji,
+      };
+      
+      setCurrentMood(moodEntry);
+      setIsOpen(false);
+      toast.success('Mood logged successfully');
+    } catch (error) {
+      console.error('Error saving mood:', error);
+      toast.error('Failed to log mood');
+    }
   };
 
   const getMoodIcon = () => {

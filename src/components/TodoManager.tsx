@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -8,6 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit3, Trash2, Flag, Calendar, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface Task {
   id: string;
@@ -27,32 +30,10 @@ interface Goal {
 }
 
 export const TodoManager = () => {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: '1',
-      title: 'Complete morning meditation',
-      description: 'Start the day with 10 minutes of mindfulness',
-      completed: false,
-      priority: 'high',
-      dueDate: new Date().toISOString().split('T')[0],
-      goalId: 'wellness',
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      title: 'Review project proposal',
-      completed: false,
-      priority: 'medium',
-      goalId: 'career',
-      createdAt: new Date(),
-    },
-  ]);
-
-  const [goals] = useState<Goal[]>([
-    { id: 'wellness', title: 'Wellness & Health', color: 'hsl(var(--success))' },
-    { id: 'career', title: 'Career Growth', color: 'hsl(var(--primary))' },
-    { id: 'learning', title: 'Learning', color: 'hsl(var(--focus))' },
-  ]);
+  const { user } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [newTask, setNewTask] = useState({
     title: '',
@@ -64,33 +45,178 @@ export const TodoManager = () => {
 
   const [showAddForm, setShowAddForm] = useState(false);
 
-  const addTask = () => {
-    if (!newTask.title.trim()) return;
+  useEffect(() => {
+    if (user) {
+      fetchTasks();
+      fetchGoals();
+      setupRealtimeSubscription();
+    }
+  }, [user]);
 
-    const task: Task = {
-      id: Date.now().toString(),
-      title: newTask.title,
-      description: newTask.description,
-      completed: false,
-      priority: newTask.priority,
-      dueDate: newTask.dueDate || undefined,
-      goalId: newTask.goalId || undefined,
-      createdAt: new Date(),
+  const fetchTasks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      const formattedTasks = data.map(task => ({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        completed: task.completed,
+        priority: task.priority as 'low' | 'medium' | 'high',
+        dueDate: task.due_date,
+        goalId: task.goal_id,
+        createdAt: new Date(task.created_at),
+      }));
+      
+      setTasks(formattedTasks);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      toast.error('Failed to load tasks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchGoals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('goals')
+        .select('id, title, category')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      
+      const formattedGoals = data.map(goal => ({
+        id: goal.id,
+        title: goal.title,
+        color: getCategoryColor(goal.category),
+      }));
+      
+      setGoals(formattedGoals);
+    } catch (error) {
+      console.error('Error fetching goals:', error);
+    }
+  };
+
+  const setupRealtimeSubscription = () => {
+    const subscription = supabase
+      .channel('tasks_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'tasks', filter: `user_id=eq.${user?.id}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newTask = {
+              id: payload.new.id,
+              title: payload.new.title,
+              description: payload.new.description,
+              completed: payload.new.completed,
+              priority: payload.new.priority as 'low' | 'medium' | 'high',
+              dueDate: payload.new.due_date,
+              goalId: payload.new.goal_id,
+              createdAt: new Date(payload.new.created_at),
+            };
+            setTasks(prev => [newTask, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            setTasks(prev => prev.map(task => 
+              task.id === payload.new.id 
+                ? { ...task, completed: payload.new.completed }
+                : task
+            ));
+          } else if (payload.eventType === 'DELETE') {
+            setTasks(prev => prev.filter(task => task.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
     };
-
-    setTasks([task, ...tasks]);
-    setNewTask({ title: '', description: '', priority: 'medium', dueDate: '', goalId: '' });
-    setShowAddForm(false);
   };
 
-  const toggleTask = (id: string) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ));
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'health': return 'hsl(var(--success))';
+      case 'career': return 'hsl(var(--primary))';
+      case 'learning': return 'hsl(var(--focus))';
+      case 'personal': return 'hsl(var(--warning))';
+      case 'financial': return 'hsl(var(--accent))';
+      default: return 'hsl(var(--muted))';
+    }
   };
 
-  const deleteTask = (id: string) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const addTask = async () => {
+    if (!newTask.title.trim() || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .insert({
+          user_id: user.id,
+          title: newTask.title,
+          description: newTask.description || null,
+          priority: newTask.priority,
+          due_date: newTask.dueDate || null,
+          goal_id: newTask.goalId || null,
+        });
+
+      if (error) throw error;
+      
+      setNewTask({ title: '', description: '', priority: 'medium', dueDate: '', goalId: '' });
+      setShowAddForm(false);
+      toast.success('Task added successfully');
+    } catch (error) {
+      console.error('Error adding task:', error);
+      toast.error('Failed to add task');
+    }
+  };
+
+  const toggleTask = async (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ completed: !task.completed })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      // Optimistic update
+      setTasks(tasks.map(t => 
+        t.id === id ? { ...t, completed: !t.completed } : t
+      ));
+      
+      toast.success(task.completed ? 'Task marked as incomplete' : 'Task completed!');
+    } catch (error) {
+      console.error('Error toggling task:', error);
+      toast.error('Failed to update task');
+    }
+  };
+
+  const deleteTask = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      // Optimistic update
+      setTasks(tasks.filter(task => task.id !== id));
+      toast.success('Task deleted');
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      toast.error('Failed to delete task');
+    }
   };
 
   const getPriorityColor = (priority: string) => {
@@ -106,6 +232,16 @@ export const TodoManager = () => {
 
   const completedTasks = tasks.filter(t => t.completed).length;
   const totalTasks = tasks.length;
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
