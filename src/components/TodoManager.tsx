@@ -11,6 +11,9 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { VoiceInput } from '@/components/VoiceInput';
+import { AITaskSuggestions } from '@/components/AITaskSuggestions';
+import { TaskSuggestion, UserContext } from '@/hooks/useAI';
 
 interface Task {
   id: string;
@@ -44,6 +47,8 @@ export const TodoManager = () => {
   });
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showVoiceInput, setShowVoiceInput] = useState(false);
+  const [showAISuggestions, setShowAISuggestions] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -228,6 +233,34 @@ export const TodoManager = () => {
     }
   };
 
+  const handleVoiceTranscription = (text: string) => {
+    setNewTask({ ...newTask, title: text });
+    setShowVoiceInput(false);
+    setShowAddForm(true);
+  };
+
+  const handleAISuggestions = (suggestion: TaskSuggestion) => {
+    setNewTask({
+      ...newTask,
+      title: suggestion.improvedTitle || newTask.title,
+      description: suggestion.improvedDescription || newTask.description,
+      priority: suggestion.priority,
+    });
+    setShowAISuggestions(false);
+  };
+
+  const getUserContext = (): UserContext => {
+    const completedTasks = tasks.filter(t => t.completed).length;
+    const hour = new Date().getHours();
+    const timeOfDay = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+    
+    return {
+      completedTasks,
+      timeOfDay,
+      productivity_level: completedTasks > 5 ? 'high' : completedTasks > 2 ? 'medium' : 'low'
+    };
+  };
+
   const getGoal = (goalId?: string) => goals.find(g => g.id === goalId);
 
   const completedTasks = tasks.filter(t => t.completed).length;
@@ -260,10 +293,20 @@ export const TodoManager = () => {
             </div>
             <div className="text-sm text-muted-foreground">Progress</div>
           </div>
-          <Button onClick={() => setShowAddForm(!showAddForm)} className="animate-float">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Task
-          </Button>
+          <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowVoiceInput(!showVoiceInput)}
+              className="animate-float"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Voice
+            </Button>
+            <Button onClick={() => setShowAddForm(!showAddForm)} className="animate-float">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Task
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -274,6 +317,15 @@ export const TodoManager = () => {
           style={{ width: `${totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0}%` }}
         />
       </div>
+
+      {/* Voice Input */}
+      {showVoiceInput && (
+        <VoiceInput
+          onTranscription={handleVoiceTranscription}
+          placeholder="Record your task description"
+          className="animate-slide-in-up"
+        />
+      )}
 
       {/* Add Task Form */}
       {showAddForm && (
@@ -291,6 +343,16 @@ export const TodoManager = () => {
               onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
               className="min-h-[80px]"
             />
+            
+            {/* AI Suggestions */}
+            <AITaskSuggestions
+              taskTitle={newTask.title}
+              taskDescription={newTask.description}
+              userGoals={goals.map(g => g.title)}
+              userContext={getUserContext()}
+              onApplySuggestion={handleAISuggestions}
+            />
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select value={newTask.priority} onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}>
                 <SelectTrigger>

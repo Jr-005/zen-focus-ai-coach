@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { VoiceInput } from '@/components/VoiceInput';
+import { useAI } from '@/hooks/useAI';
 
 interface Message {
   id: string;
@@ -30,8 +32,11 @@ export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) =
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showVoiceInput, setShowVoiceInput] = useState(false);
+  const [enableTTS, setEnableTTS] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { textToSpeech, loading: ttsLoading } = useAI();
 
   useEffect(() => {
     if (user) {
@@ -195,6 +200,11 @@ export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) =
       setMessages(prev => [...prev, aiMessage]);
       setIsTyping(false);
       
+      // Play AI response if TTS is enabled
+      if (enableTTS) {
+        playAIResponse(aiContent);
+      }
+      
       // Save AI message to database
       try {
         await supabase
@@ -209,6 +219,32 @@ export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) =
         console.error('Error saving AI message:', error);
       }
     }, 1000 + Math.random() * 2000); // 1-3 seconds delay
+  };
+
+  const handleVoiceTranscription = (text: string) => {
+    setInputMessage(text);
+    setShowVoiceInput(false);
+    // Auto-send the transcribed message
+    sendMessage(text);
+  };
+
+  const playAIResponse = async (text: string) => {
+    if (!enableTTS) return;
+    
+    try {
+      const audioData = await textToSpeech(text);
+      if (audioData) {
+        // Convert base64 to blob and play
+        const audioBlob = new Blob(
+          [Uint8Array.from(atob(audioData), c => c.charCodeAt(0))], 
+          { type: 'audio/mpeg' }
+        );
+        const audio = new Audio(URL.createObjectURL(audioBlob));
+        await audio.play();
+      }
+    } catch (error) {
+      console.error('Error playing AI response:', error);
+    }
   };
 
   const handleQuickAction = (message: string) => {
@@ -275,16 +311,35 @@ export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) =
             <Button
               key={action.label}
               variant="outline"
-              size="sm"
-              onClick={() => handleQuickAction(action.message)}
-              className="flex flex-col h-auto p-3 space-y-1"
-            >
-              <Icon className="w-4 h-4" />
-              <span className="text-xs">{action.label}</span>
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                variant={enableTTS ? "default" : "outline"}
+                size="sm"
+                onClick={() => setEnableTTS(!enableTTS)}
+                disabled={ttsLoading}
+              >
+                🔊 {enableTTS ? 'On' : 'Off'}
+              </Button>
+              <Button
+                variant={showVoiceInput ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowVoiceInput(!showVoiceInput)}
+              >
+                {showVoiceInput ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+              </Button>
+            </div>
           );
         })}
       </div>
+
+      {/* Voice Input */}
+      {showVoiceInput && (
+        <VoiceInput
+          onTranscription={handleVoiceTranscription}
+          placeholder="Record your message to the AI assistant"
+          className="animate-slide-in-up"
+        />
+      )}
 
       {/* Messages */}
       <Card className="flex-1 p-4">
@@ -364,12 +419,12 @@ export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) =
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && sendMessage(inputMessage)}
-          disabled={isListening}
+          disabled={showVoiceInput}
           className="flex-1"
         />
         <Button 
           onClick={() => sendMessage(inputMessage)}
-          disabled={!inputMessage.trim() || isTyping}
+          disabled={!inputMessage.trim() || isTyping || showVoiceInput}
         >
           <Send className="w-4 h-4" />
         </Button>
