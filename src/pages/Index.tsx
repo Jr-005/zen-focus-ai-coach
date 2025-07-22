@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Target, Brain, Timer, Mic, MicOff } from 'lucide-react';
+import { Plus, Target, Brain, Timer, Mic, MicOff, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import { TodoManager } from '@/components/TodoManager';
 import { GoalTracker } from '@/components/GoalTracker';
 import { FocusTimer } from '@/components/FocusTimer';
@@ -12,6 +13,7 @@ import { MotivationalQuote } from '@/components/MotivationalQuote';
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'tasks' | 'goals' | 'focus' | 'ai'>('tasks');
   const [isListening, setIsListening] = useState(false);
+  const { signOut, user } = useAuth();
 
   const tabs = [
     { id: 'tasks', label: 'Tasks', icon: Plus },
@@ -48,6 +50,15 @@ const Index = () => {
               >
                 {isListening ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
                 {isListening ? "Listening..." : "Voice"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={signOut}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
               </Button>
             </div>
           </div>
