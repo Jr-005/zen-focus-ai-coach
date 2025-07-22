@@ -311,25 +311,36 @@ export const AIAssistant = ({ isListening, setIsListening }: AIAssistantProps) =
             <Button
               key={action.label}
               variant="outline"
-            <div className="flex space-x-2">
-              <Button
-                variant={enableTTS ? "default" : "outline"}
-                size="sm"
-                onClick={() => setEnableTTS(!enableTTS)}
-                disabled={ttsLoading}
-              >
-                🔊 {enableTTS ? 'On' : 'Off'}
-              </Button>
-              <Button
-                variant={showVoiceInput ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowVoiceInput(!showVoiceInput)}
-              >
-                {showVoiceInput ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-              </Button>
-            </div>
+              size="sm"
+              className="flex flex-col items-center space-y-1 h-auto py-3"
+              onClick={() => handleQuickAction(action.message)}
+            >
+              <Icon className="w-4 h-4" />
+              <span className="text-xs">{action.label}</span>
+            </Button>
           );
         })}
+      </div>
+
+      {/* TTS and Voice Controls */}
+      <div className="flex items-center justify-between">
+        <div className="flex space-x-2">
+          <Button
+            variant={enableTTS ? "default" : "outline"}
+            size="sm"
+            onClick={() => setEnableTTS(!enableTTS)}
+            disabled={ttsLoading}
+          >
+            🔊 {enableTTS ? 'On' : 'Off'}
+          </Button>
+          <Button
+            variant={showVoiceInput ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowVoiceInput(!showVoiceInput)}
+          >
+            {showVoiceInput ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+          </Button>
+        </div>
       </div>
 
       {/* Voice Input */}
