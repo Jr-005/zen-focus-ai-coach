@@ -39,10 +39,10 @@ serve(async (req) => {
       throw new Error('No authorization header')
     }
 
-    // Get OpenAI API key from environment
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openaiApiKey) {
-      throw new Error('OpenAI API key not configured')
+    // Get Groq API key from environment
+    const groqApiKey = Deno.env.get('GROQ_API_KEY')
+    if (!groqApiKey) {
+      throw new Error('Groq API key not configured')
     }
 
     // Parse request body
@@ -77,15 +77,15 @@ ${taskDescription ? `Description: "${taskDescription}"` : ''}
 
 Please analyze this task and provide intelligent suggestions to help me complete it more effectively.`
 
-    // Call OpenAI API
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Call Groq API
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${groqApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'llama-3.1-70b-versatile',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -95,17 +95,17 @@ Please analyze this task and provide intelligent suggestions to help me complete
       }),
     })
 
-    if (!openaiResponse.ok) {
-      const errorData = await openaiResponse.text()
-      console.error('OpenAI API error:', errorData)
-      throw new Error(`OpenAI API error: ${openaiResponse.status}`)
+    if (!groqResponse.ok) {
+      const errorData = await groqResponse.text()
+      console.error('Groq API error:', errorData)
+      throw new Error(`Groq API error: ${groqResponse.status}`)
     }
 
-    const openaiData = await openaiResponse.json()
-    const aiResponse = openaiData.choices[0]?.message?.content
+    const groqData = await groqResponse.json()
+    const aiResponse = groqData.choices[0]?.message?.content
 
     if (!aiResponse) {
-      throw new Error('No response from OpenAI')
+      throw new Error('No response from Groq')
     }
 
     // Parse AI response
@@ -131,7 +131,7 @@ Please analyze this task and provide intelligent suggestions to help me complete
     )
 
   } catch (error) {
-    console.error('Error in openai-suggestions function:', error)
+    console.error('Error in groq-suggestions function:', error)
     
     return new Response(
       JSON.stringify({ 

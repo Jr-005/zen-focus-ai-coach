@@ -41,7 +41,7 @@ export const TodoManager = () => {
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
-    priority: 'medium' as const,
+    priority: 'medium' as 'low' | 'medium' | 'high',
     dueDate: '',
     goalId: '',
   });

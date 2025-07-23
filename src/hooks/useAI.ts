@@ -29,7 +29,7 @@ export const useAI = () => {
   ): Promise<TaskSuggestion | null> => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('openai-suggestions', {
+      const { data, error } = await supabase.functions.invoke('groq-suggestions', {
         body: {
           taskTitle,
           taskDescription,
