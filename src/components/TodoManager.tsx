@@ -13,7 +13,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { VoiceInput } from '@/components/VoiceInput';
 import { AITaskSuggestions } from '@/components/AITaskSuggestions';
-import { TaskSuggestion, UserContext } from '@/hooks/useAI';
+import NaturalLanguageTaskInput from '@/components/NaturalLanguageTaskInput';
+import { TaskSuggestion, UserContext, type ParsedTask } from '@/hooks/useAI';
 
 interface Task {
   id: string;
@@ -249,6 +250,30 @@ export const TodoManager = () => {
     setShowAISuggestions(false);
   };
 
+  const handleNaturalLanguageTask = async (parsedTask: ParsedTask) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .insert({
+          user_id: user.id,
+          title: parsedTask.title,
+          description: parsedTask.description || null,
+          priority: parsedTask.priority,
+          due_date: parsedTask.dueDate || null,
+          goal_id: parsedTask.goalId || null,
+        });
+
+      if (error) throw error;
+      
+      toast.success('Task created from natural language!');
+    } catch (error) {
+      console.error('Error adding parsed task:', error);
+      toast.error('Failed to create task');
+    }
+  };
+
   const getUserContext = (): UserContext => {
     const completedTasks = tasks.filter(t => t.completed).length;
     const hour = new Date().getHours();
@@ -317,6 +342,13 @@ export const TodoManager = () => {
           style={{ width: `${totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0}%` }}
         />
       </div>
+
+      {/* Natural Language Task Input */}
+      <NaturalLanguageTaskInput
+        onTaskParsed={handleNaturalLanguageTask}
+        userGoals={goals.map(g => ({ id: g.id, title: g.title }))}
+        className="animate-slide-in-up"
+      />
 
       {/* Voice Input */}
       {showVoiceInput && (

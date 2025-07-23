@@ -18,8 +18,52 @@ export interface UserContext {
   productivity_level?: string;
 }
 
+export interface ParsedTask {
+  title: string;
+  description?: string;
+  priority: 'low' | 'medium' | 'high';
+  dueDate?: string;
+  goalId?: string;
+  subtasks?: string[];
+}
+
 export const useAI = () => {
   const [loading, setLoading] = useState(false);
+
+  const parseTaskFromNaturalLanguage = async (
+    input: string,
+    userGoals?: Array<{ id: string; title: string }>
+  ): Promise<ParsedTask | null> => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('parse-task-nlp', {
+        body: {
+          input,
+          userGoals
+        }
+      });
+
+      if (error) {
+        console.error('Task parsing error:', error);
+        toast.error('Failed to parse task');
+        return null;
+      }
+
+      if (!data.success) {
+        console.error('Task parsing failed:', data.error);
+        toast.error('Failed to understand task request');
+        return null;
+      }
+
+      return data.task;
+    } catch (error) {
+      console.error('Error parsing task:', error);
+      toast.error('Failed to process task request');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getTaskSuggestions = async (
     taskTitle: string,
@@ -134,6 +178,7 @@ export const useAI = () => {
 
   return {
     loading,
+    parseTaskFromNaturalLanguage,
     getTaskSuggestions,
     transcribeAudio,
     textToSpeech
