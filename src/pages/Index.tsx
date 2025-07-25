@@ -7,19 +7,21 @@ import { TodoManager } from '@/components/TodoManager';
 import { GoalTracker } from '@/components/GoalTracker';
 import { FocusTimer } from '@/components/FocusTimer';
 import { AIAssistant } from '@/components/AIAssistant';
+import { VoiceAgent } from '@/components/VoiceAgent';
 import { MoodTracker } from '@/components/MoodTracker';
 import { MotivationalQuote } from '@/components/MotivationalQuote';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'tasks' | 'goals' | 'focus' | 'ai'>('tasks');
+  const [activeTab, setActiveTab] = useState<'tasks' | 'goals' | 'focus' | 'ai' | 'voice'>('voice');
   const [isListening, setIsListening] = useState(false);
   const { signOut, user } = useAuth();
 
   const tabs = [
+    { id: 'voice', label: 'Voice Agent', icon: Mic },
     { id: 'tasks', label: 'Tasks', icon: Plus },
     { id: 'goals', label: 'Goals', icon: Target },
     { id: 'focus', label: 'Focus', icon: Timer },
-    { id: 'ai', label: 'AI Coach', icon: Brain },
+    { id: 'ai', label: 'AI Chat', icon: Brain },
   ] as const;
 
   return (
@@ -92,6 +94,20 @@ const Index = () => {
 
         {/* Content Sections */}
         <div className="animate-fade-in">
+          {activeTab === 'voice' && (
+            <div className="flex justify-center">
+              <VoiceAgent
+                onTaskCreated={(task) => {
+                  // Switch to tasks tab and refresh
+                  setActiveTab('tasks');
+                }}
+                onSessionStarted={() => {
+                  setActiveTab('focus');
+                }}
+              />
+            </div>
+          )}
+
           {activeTab === 'tasks' && (
             <Card className="p-6 shadow-zen border-border/50">
               <TodoManager />
