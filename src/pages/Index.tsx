@@ -8,6 +8,7 @@ import { GoalTracker } from '@/components/GoalTracker';
 import { FocusTimer } from '@/components/FocusTimer';
 import { AIAssistant } from '@/components/AIAssistant';
 import { VoiceAgent } from '@/components/VoiceAgent';
+import { FullVoiceAssistant } from '@/components/FullVoiceAssistant';
 import { MoodTracker } from '@/components/MoodTracker';
 import { MotivationalQuote } from '@/components/MotivationalQuote';
 
@@ -96,13 +97,17 @@ const Index = () => {
         <div className="animate-fade-in">
           {activeTab === 'voice' && (
             <div className="flex justify-center">
-              <VoiceAgent
+              <FullVoiceAssistant
                 onTaskCreated={(task) => {
                   // Switch to tasks tab and refresh
                   setActiveTab('tasks');
                 }}
                 onSessionStarted={() => {
                   setActiveTab('focus');
+                }}
+                onNoteCreated={(note) => {
+                  // Could add notes tab in future
+                  console.log('Note created:', note);
                 }}
               />
             </div>
