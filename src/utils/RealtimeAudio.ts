@@ -200,10 +200,7 @@ export class RealtimeVoiceChat {
       this.audioQueue = new AudioQueue(this.audioContext);
 
       // Get WebSocket URL for the environment
-      const response = await fetch('/api/project-info');
-      const projectInfo = await response.json();
-      const projectRef = projectInfo.project_ref;
-      
+      const projectRef = 'oodxparkhdvlljdftswg'; // Hardcoded project reference
       const wsUrl = `wss://${projectRef}.functions.supabase.co/functions/v1/openai-realtime`;
       
       this.ws = new WebSocket(wsUrl);
