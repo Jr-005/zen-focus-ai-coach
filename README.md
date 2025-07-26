@@ -2,16 +2,11 @@
 
 **Your intelligent voice-activated productivity assistant for automating tasks, organizing your day, and staying focused — built with AssemblyAI real-time transcription and lightning-fast AI responses.**
 
-## Project info
-
-**URL**: https://lovable.dev/projects/3fa23bf9-eab5-40c5-b47b-573852c086f9
-
 ## DEV x AssemblyAI Challenge Submission
 
 **Track:** Business Automation Voice Agent  
 **Title:** ZenVA – AI-Powered Voice Personal Assistant  
-**Demo:** [Live Demo](https://lovable.dev/projects/3fa23bf9-eab5-40c5-b47b-573852c086f9)  
-**GitHub Repo:** [GitHub](https://github.com/your-username/zenva-voice-assistant)  
+**GitHub Repo:** [GitHub](https://github.com/Jr-005/zen-focus-ai-coach)  
 
 ### Description:
 ZenVA is an AI-powered personal assistant that automates productivity and daily planning through real-time voice interaction. By leveraging AssemblyAI's ultra-fast Universal-Streaming API, ZenVA captures spoken input, processes it through an intelligent LLM agent (GROQ + RAG), and automates tasks, reminders, focus sessions, and summaries. It helps users stay on top of their goals with voice-driven automation.
@@ -43,20 +38,48 @@ ZenVA uses AssemblyAI's Universal-Streaming API to transcribe voice in real-time
 
 ## Tech Stack
 
-- 🧠 OpenAI / GROQ + RAG for NLP
-- 🎙️ AssemblyAI Universal-Streaming API for voice transcription
-- ⚡ Supabase for real-time data + edge functions
-- ⚛️ React + Vite + TypeScript + shadcn-ui for UI
+### Frontend
+- ⚛️ React 18 with TypeScript for type-safe development
+- 🚀 Vite for lightning-fast builds and development
+- 🎨 shadcn-ui + Tailwind CSS for beautiful, customizable UI
+- 🎙️ Web Audio API for voice input handling
+
+### Backend & Infrastructure
+- ⚡ Supabase for:
+  - Real-time data synchronization
+  - Edge Functions deployment
+  - User authentication
+  - Database storage
+- 🧠 AI Integration:
+  - GROQ for ultra-fast LLM responses
+  - RAG (Retrieval Augmented Generation) for context-aware responses
+  - AssemblyAI Universal-Streaming API for real-time transcription
+  - OpenAI for task analysis and natural language processing
+
+## Environment Setup
+
+Before running the project, you'll need to set up the following environment variables:
+
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# AI Services
+VITE_ASSEMBLYAI_API_KEY=your_assemblyai_api_key
+VITE_GROQ_API_KEY=your_groq_api_key
+VITE_OPENAI_API_KEY=your_openai_api_key
+
+# Optional: Analytics & Monitoring
+VITE_POSTHOG_KEY=your_posthog_key
+VITE_SENTRY_DSN=your_sentry_dsn
+```
+
+Create a `.env` file in the root directory and add these variables. Never commit this file to version control.
 
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/3fa23bf9-eab5-40c5-b47b-573852c086f9) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
@@ -104,14 +127,39 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
+## Development Workflow
 
-Simply open [Lovable](https://lovable.dev/projects/3fa23bf9-eab5-40c5-b47b-573852c086f9) and click on Share -> Publish.
+1. **Branch Management**
+   - Create feature branches from `main`
+   - Use conventional commits (e.g., `feat:`, `fix:`, `docs:`)
+   - Submit PRs for review before merging
 
-## Can I connect a custom domain to my Lovable project?
+2. **Testing**
+   - Run `npm test` to execute test suite
+   - Ensure all AI integration tests pass
+   - Test voice features in different browsers
 
-Yes, you can!
+3. **Code Quality**
+   - Run `npm run lint` to check code style
+   - Run `npm run type-check` for TypeScript validation
+   - Use provided VS Code settings for consistent formatting
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Deployment
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Manual Deployment
+
+1. Build the project:
+   ```sh
+   npm run build
+   ```
+
+2. Deploy to your preferred platform:
+   - Vercel: `vercel deploy`
+   - Netlify: `netlify deploy`
+   - Or any static hosting service
+
+3. Set up environment variables on your hosting platform
+
+### Custom Domain Setup
+
+To set up a custom domain, follow the documentation of your chosen hosting platform (Vercel, Netlify, etc.) for adding and configuring custom domains.
