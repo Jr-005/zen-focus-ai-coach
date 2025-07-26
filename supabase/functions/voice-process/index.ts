@@ -13,9 +13,35 @@ serve(async (req) => {
   }
 
   try {
-    const { audioData, text } = await req.json();
+    console.log('Voice process request received')
     
-    // Initialize Supabase client
+    // Validate required environment variables
+    const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'ASSEMBLYAI_API_KEY', 'GROQ_API_KEY']
+    for (const envVar of requiredEnvVars) {
+      if (!Deno.env.get(envVar)) {
+        console.error(`Missing required environment variable: ${envVar}`)
+        return new Response(
+          JSON.stringify({ error: `Missing configuration: ${envVar}` }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
+    const requestBody = await req.json();
+    const { audioData, text } = requestBody;
+    console.log('Request received:', { hasAudioData: !!audioData, hasText: !!text })
+    
+    if (!audioData && !text) {
+      return new Response(
+        JSON.stringify({ error: 'Either audioData or text must be provided' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Get auth header and initialize Supabase client
+    const authHeader = req.headers.get('Authorization');
+    console.log('Auth header present:', !!authHeader)
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -24,7 +50,9 @@ serve(async (req) => {
 
     // If audio data is provided, transcribe it first
     if (audioData) {
+      console.log('Starting audio transcription')
       transcribedText = await transcribeAudio(audioData);
+      console.log('Transcription result:', transcribedText ? 'Success' : 'Failed')
     }
 
     if (!transcribedText) {
@@ -35,7 +63,9 @@ serve(async (req) => {
     }
 
     // Process with AI and get response
-    const aiResponse = await processWithAI(transcribedText, supabase);
+    console.log('Starting AI processing')
+    const aiResponse = await processWithAI(transcribedText, supabase, authHeader);
+    console.log('AI processing completed')
 
     return new Response(
       JSON.stringify({ 
@@ -141,7 +171,7 @@ async function transcribeAudio(audioData: string): Promise<string | null> {
   }
 }
 
-async function processWithAI(text: string, supabase: any): Promise<{ text: string; action?: any }> {
+async function processWithAI(text: string, supabase: any, authHeader?: string | null): Promise<{ text: string; action?: any }> {
   try {
     const groqApiKey = Deno.env.get('GROQ_API_KEY');
     if (!groqApiKey) {
@@ -249,7 +279,7 @@ Be conversational and helpful. When users ask you to create tasks, start timers,
     // Handle function calls
     if (message.tool_calls && message.tool_calls.length > 0) {
       const toolCall = message.tool_calls[0];
-      actionResult = await handleFunctionCall(toolCall, supabase);
+      actionResult = await handleFunctionCall(toolCall, supabase, authHeader);
     }
 
     // Save interaction to embeddings
@@ -271,21 +301,30 @@ Be conversational and helpful. When users ask you to create tasks, start timers,
   }
 }
 
-async function handleFunctionCall(toolCall: any, supabase: any): Promise<any> {
+async function handleFunctionCall(toolCall: any, supabase: any, authHeader?: string | null): Promise<any> {
   const { name, arguments: args } = toolCall.function;
   const parsedArgs = JSON.parse(args);
 
   try {
-    const authHeader = Deno.env.get('AUTHORIZATION');
-    const userResponse = await supabase.auth.getUser(authHeader?.replace('Bearer ', ''));
+    console.log('Handling function call:', name, 'with args:', parsedArgs)
+    
+    if (!authHeader) {
+      console.error('No auth header provided for function call')
+      throw new Error('Authentication required');
+    }
+
+    const userResponse = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
     const userId = userResponse.data?.user?.id;
+    console.log('User ID from auth:', userId)
 
     if (!userId) {
+      console.error('Authentication failed:', userResponse.error)
       throw new Error('User not authenticated');
     }
 
     switch (name) {
       case 'create_task':
+        console.log('Creating task...')
         const { data: taskData, error: taskError } = await supabase
           .from('tasks')
           .insert({
@@ -299,10 +338,15 @@ async function handleFunctionCall(toolCall: any, supabase: any): Promise<any> {
           .select()
           .single();
 
-        if (taskError) throw taskError;
+        if (taskError) {
+          console.error('Task creation error:', taskError)
+          throw taskError;
+        }
+        console.log('Task created successfully:', taskData)
         return { type: 'task_created', task: taskData };
 
       case 'start_focus_session':
+        console.log('Starting focus session...')
         const { data: sessionData, error: sessionError } = await supabase
           .from('focus_sessions')
           .insert({
@@ -314,25 +358,34 @@ async function handleFunctionCall(toolCall: any, supabase: any): Promise<any> {
           .select()
           .single();
 
-        if (sessionError) throw sessionError;
+        if (sessionError) {
+          console.error('Focus session creation error:', sessionError)
+          throw sessionError;
+        }
+        console.log('Focus session started successfully:', sessionData)
         return { type: 'focus_session_started', session: sessionData };
 
       case 'save_note':
+        console.log('Saving note...')
         const { data: noteData, error: noteError } = await supabase
-          .from('notes')
+          .from('voice_notes')
           .insert({
             user_id: userId,
             content: parsedArgs.content,
-            tags: parsedArgs.tags || [],
-            note_type: 'voice'
+            summary: parsedArgs.tags?.join(', ') || null
           })
           .select()
           .single();
 
-        if (noteError) throw noteError;
+        if (noteError) {
+          console.error('Note saving error:', noteError)
+          throw noteError;
+        }
+        console.log('Note saved successfully:', noteData)
         return { type: 'note_saved', note: noteData };
 
       default:
+        console.error('Unknown function:', name)
         throw new Error(`Unknown function: ${name}`);
     }
   } catch (error) {
