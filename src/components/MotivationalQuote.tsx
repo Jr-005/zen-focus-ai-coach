@@ -152,35 +152,36 @@ export const MotivationalQuote = () => {
 
   return (
     <Card className={cn(
-      "p-6 relative overflow-hidden transition-all duration-500 animate-fade-in",
+      "p-4 lg:p-6 relative overflow-hidden transition-all duration-500 animate-fade-in shadow-lg",
       "bg-gradient-to-br",
-      getCategoryColor(currentQuote.category)
+      getCategoryColor(currentQuote.category),
+      "border-border/50 backdrop-blur-sm"
     )}>
       {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-20 h-20 opacity-10">
+      <div className="absolute top-0 right-0 w-16 h-16 lg:w-20 lg:h-20 opacity-10">
         {getCategoryIcon(currentQuote.category)}
       </div>
       
-      <div className="relative space-y-4">
+      <div className="relative space-y-3 lg:space-y-4">
         {/* Greeting */}
-        <div className="text-sm text-muted-foreground font-medium">
+        <div className="text-sm lg:text-base text-muted-foreground font-medium">
           {getGreeting()}
         </div>
 
         {/* Quote */}
-        <div className="space-y-3">
-          <blockquote className="text-lg md:text-xl font-medium text-foreground leading-relaxed">
+        <div className="space-y-2 lg:space-y-3">
+          <blockquote className="text-base lg:text-lg xl:text-xl font-medium text-foreground leading-relaxed">
             "{currentQuote.text}"
           </blockquote>
           
-          <div className="flex items-center justify-between">
-            <cite className="text-sm text-muted-foreground not-italic">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <cite className="text-sm lg:text-base text-muted-foreground not-italic">
               — {currentQuote.author}
             </cite>
             
             <div className="flex items-center space-x-2">
               {getCategoryIcon(currentQuote.category)}
-              <span className="text-xs text-muted-foreground capitalize">
+              <span className="text-xs lg:text-sm text-muted-foreground capitalize">
                 {currentQuote.category}
               </span>
             </div>
@@ -188,15 +189,15 @@ export const MotivationalQuote = () => {
         </div>
 
         {/* Refresh Button */}
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center pt-1 lg:pt-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={generateContextualQuote}
             disabled={isGenerating}
-            className="text-xs opacity-60 hover:opacity-100 transition-opacity"
+            className="text-xs lg:text-sm opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-105"
           >
-            <RefreshCw className={cn("w-3 h-3 mr-1", isGenerating && "animate-spin")} />
+            <RefreshCw className={cn("w-3 h-3 lg:w-4 lg:h-4 mr-1", isGenerating && "animate-spin")} />
             {isGenerating ? "Generating..." : "New Quote"}
           </Button>
         </div>
