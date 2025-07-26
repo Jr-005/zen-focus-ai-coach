@@ -201,7 +201,7 @@ export class RealtimeVoiceChat {
 
       // Get WebSocket URL for the environment
       const projectRef = 'oodxparkhdvlljdftswg'; // Hardcoded project reference
-      const wsUrl = `wss://${projectRef}.functions.supabase.co/functions/v1/openai-realtime`;
+      const wsUrl = `wss://${projectRef}.functions.supabase.co/functions/v1/voice-realtime`;
       
       this.ws = new WebSocket(wsUrl);
       
