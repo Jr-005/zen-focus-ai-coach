@@ -201,7 +201,7 @@ export class RealtimeVoiceChat {
 
       // Get WebSocket URL for the environment
       const projectRef = 'oodxparkhdvlljdftswg'; // Hardcoded project reference
-      const wsUrl = `wss://${projectRef}.functions.supabase.co/functions/v1/voice-realtime`;
+      const wsUrl = `wss://${projectRef}.functions.supabase.co/voice-realtime`;
       
       this.ws = new WebSocket(wsUrl);
       
@@ -218,22 +218,31 @@ export class RealtimeVoiceChat {
           
           this.onMessage(message);
           
-          // Handle audio output
-          if (message.type === 'response.audio.delta') {
+          // Handle audio output from ElevenLabs
+          if (message.type === 'audio_response') {
             this.onSpeakingChange(true);
             
-            // Convert base64 to Uint8Array
-            const binaryString = atob(message.delta);
+            // Convert base64 MP3 to audio
+            const binaryString = atob(message.audio);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
               bytes[i] = binaryString.charCodeAt(i);
             }
             
-            if (this.audioContext && this.audioQueue) {
-              await this.audioQueue.addToQueue(bytes);
+            // Play MP3 audio directly
+            if (this.audioContext) {
+              try {
+                const audioBuffer = await this.audioContext.decodeAudioData(bytes.buffer);
+                const source = this.audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(this.audioContext.destination);
+                source.onended = () => this.onSpeakingChange(false);
+                source.start(0);
+              } catch (error) {
+                console.error('Error playing audio:', error);
+                this.onSpeakingChange(false);
+              }
             }
-          } else if (message.type === 'response.audio.done') {
-            this.onSpeakingChange(false);
           }
           
         } catch (error) {
@@ -269,8 +278,8 @@ export class RealtimeVoiceChat {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
           const encodedAudio = encodeAudioForAPI(audioData);
           this.ws.send(JSON.stringify({
-            type: 'input_audio_buffer.append',
-            audio: encodedAudio
+            type: 'audio_data',
+            audio_data: encodedAudio
           }));
         }
       });
@@ -298,22 +307,10 @@ export class RealtimeVoiceChat {
       throw new Error('Not connected to voice chat');
     }
 
-    const event = {
-      type: 'conversation.item.create',
-      item: {
-        type: 'message',
-        role: 'user',
-        content: [
-          {
-            type: 'input_text',
-            text
-          }
-        ]
-      }
-    };
-
-    this.ws.send(JSON.stringify(event));
-    this.ws.send(JSON.stringify({ type: 'response.create' }));
+    this.ws.send(JSON.stringify({
+      type: 'text_message',
+      text: text
+    }));
   }
 
   disconnect() {
