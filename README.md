@@ -14,12 +14,13 @@ ZenVA is an AI-powered personal assistant that automates productivity and daily 
 ## Features
 
 - 🎤 **Real-Time Voice Commands** – Powered by AssemblyAI Universal-Streaming for instant transcription
+- 🧠 **RAG-Powered Memory System** – AI remembers your conversations and references past notes
 - 📅 **Smart Scheduling Assistant** – Automatically create reminders and to-dos from voice
-- 🧠 **LLM-Powered Task Planning** – Converts your speech into structured plans using RAG
+- 🤖 **LLM-Powered Task Planning** – Converts your speech into structured plans using context
 - ✅ **Context-Aware Task Manager** – Organizes and prioritizes tasks intelligently
 - 🧘 **Focus & Break Guidance** – Voice coaching to manage deep work sessions
-- 📝 **Voice Notes with Summaries** – Real-time voice note transcription with smart highlights
-- 🧾 **Meeting Minutes Generator** – Transcribe, summarize, and organize your meetings on the fly
+- 📝 **Voice Notes with Semantic Search** – AI-indexed notes with vector similarity search
+- 🔍 **Intelligent Context Retrieval** – Finds relevant past conversations automatically
 
 ## Use Case Examples
 

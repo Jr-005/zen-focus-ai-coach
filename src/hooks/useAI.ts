@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useRAG } from './useRAG';
 
 export interface TaskSuggestion {
   improvedTitle?: string;
@@ -29,6 +30,7 @@ export interface ParsedTask {
 
 export const useAI = () => {
   const [loading, setLoading] = useState(false);
+  const { queryRAG } = useRAG();
 
   const parseTaskFromNaturalLanguage = async (
     input: string,
@@ -73,6 +75,9 @@ export const useAI = () => {
   ): Promise<TaskSuggestion | null> => {
     setLoading(true);
     try {
+      // Get relevant context from RAG before making suggestions
+      const ragContext = await queryRAG(`${taskTitle} ${taskDescription || ''}`, 3);
+      
       const { data, error } = await supabase.functions.invoke('groq-suggestions', {
         body: {
           taskTitle,
@@ -82,7 +87,8 @@ export const useAI = () => {
             ...userContext,
             timeOfDay: new Date().getHours() < 12 ? 'morning' : 
                       new Date().getHours() < 18 ? 'afternoon' : 'evening'
-          }
+          },
+          relevantNotes: ragContext.context // Add RAG context
         }
       });
 

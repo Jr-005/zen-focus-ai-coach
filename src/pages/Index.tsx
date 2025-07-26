@@ -11,9 +11,10 @@ import { VoiceAgent } from '@/components/VoiceAgent';
 import { FullVoiceAssistant } from '@/components/FullVoiceAssistant';
 import { MoodTracker } from '@/components/MoodTracker';
 import { MotivationalQuote } from '@/components/MotivationalQuote';
+import NotesManager from '@/components/NotesManager';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'tasks' | 'goals' | 'focus' | 'ai' | 'voice'>('voice');
+  const [activeTab, setActiveTab] = useState<'tasks' | 'goals' | 'focus' | 'ai' | 'voice' | 'notes'>('voice');
   const [isListening, setIsListening] = useState(false);
   const { signOut, user } = useAuth();
 
@@ -22,6 +23,7 @@ const Index = () => {
     { id: 'tasks', label: 'Tasks', icon: Plus },
     { id: 'goals', label: 'Goals', icon: Target },
     { id: 'focus', label: 'Focus', icon: Timer },
+    { id: 'notes', label: 'Notes', icon: Brain },
     { id: 'ai', label: 'AI Chat', icon: Brain },
   ] as const;
 
@@ -128,6 +130,12 @@ const Index = () => {
           {activeTab === 'focus' && (
             <Card className="p-6 shadow-zen border-border/50">
               <FocusTimer />
+            </Card>
+          )}
+          
+          {activeTab === 'notes' && (
+            <Card className="p-6 shadow-zen border-border/50">
+              <NotesManager />
             </Card>
           )}
           

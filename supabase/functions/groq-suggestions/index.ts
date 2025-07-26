@@ -15,6 +15,12 @@ interface TaskSuggestionRequest {
     timeOfDay: string
     productivity_level?: string
   }
+  relevantNotes?: Array<{
+    content: string
+    summary?: string
+    similarity: number
+    created_at: string
+  }>
 }
 
 interface TaskSuggestion {
@@ -46,21 +52,27 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { taskTitle, taskDescription, userGoals, userContext }: TaskSuggestionRequest = await req.json()
+    const { taskTitle, taskDescription, userGoals, userContext, relevantNotes }: TaskSuggestionRequest = await req.json()
 
     if (!taskTitle) {
       throw new Error('Task title is required')
     }
 
+    // Build RAG context string
+    const ragContext = relevantNotes && relevantNotes.length > 0 
+      ? `\n\nRelevant past notes and insights:
+${relevantNotes.map(note => `- ${note.summary || note.content.substring(0, 100)}... (${Math.round(note.similarity * 100)}% relevant)`).join('\n')}`
+      : ''
+
     // Build context-aware prompt
-    const systemPrompt = `You are an AI productivity assistant. Analyze the user's task and provide intelligent suggestions to improve productivity and task completion success.
+    const systemPrompt = `You are an AI productivity assistant with memory. Analyze the user's task and provide intelligent suggestions to improve productivity and task completion success.
 
 Consider:
 - User's current goals: ${userGoals?.join(', ') || 'None specified'}
 - Time of day: ${userContext?.timeOfDay || 'Unknown'}
 - Current mood: ${userContext?.currentMood || 'Unknown'}
 - Completed tasks today: ${userContext?.completedTasks || 0}
-- Productivity level: ${userContext?.productivity_level || 'Unknown'}
+- Productivity level: ${userContext?.productivity_level || 'Unknown'}${ragContext}
 
 Provide suggestions in JSON format with the following structure:
 {

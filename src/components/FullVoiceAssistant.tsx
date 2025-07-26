@@ -13,13 +13,15 @@ import {
   Circle,
   Square,
   Volume2,
-  VolumeX 
+  VolumeX,
+  Brain 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { RealtimeVoiceChat } from '@/utils/RealtimeAudio';
+import { useRAG } from '@/hooks/useRAG';
 
 interface Message {
   id: string;
@@ -50,6 +52,7 @@ export const FullVoiceAssistant = ({
   const [currentTranscript, setCurrentTranscript] = useState('');
   
   const { user } = useAuth();
+  const { saveVoiceNote } = useRAG();
   const voiceChatRef = useRef<RealtimeVoiceChat | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
@@ -94,6 +97,11 @@ export const FullVoiceAssistant = ({
       };
       setMessages(prev => [...prev, userMessage]);
       saveMessage(userMessage);
+      
+      // Save voice note with RAG when transcription is complete
+      if (message.transcript && message.transcript.length > 20) {
+        saveVoiceNote(message.transcript, `Voice note from ${new Date().toLocaleString()}`);
+      }
     }
     else if (message.type === 'response.audio_transcript.delta') {
       // Handle streaming text response
@@ -352,7 +360,10 @@ export const FullVoiceAssistant = ({
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="font-semibold text-lg">ZenVA Full Voice Assistant</h3>
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <Brain className="w-5 h-5" />
+              ZenVA Voice Assistant with Memory
+            </h3>
             <div className="flex items-center space-x-2">
               <Circle className={cn("w-3 h-3 rounded-full", getStatusColor())} />
               <p className="text-sm text-muted-foreground">{getStatusText()}</p>
@@ -382,9 +393,9 @@ export const FullVoiceAssistant = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-muted-foreground py-12">
-            <Bot className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <h4 className="text-lg font-medium mb-2">Full Voice Assistant Ready</h4>
-            <p className="mb-4">Connect and start a natural conversation with your AI assistant</p>
+            <Brain className="w-16 h-16 mx-auto mb-4 opacity-50" />
+            <h4 className="text-lg font-medium mb-2">AI Assistant with Memory Ready</h4>
+            <p className="mb-4">I remember our conversations and can reference your previous notes and insights</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm max-w-md mx-auto">
               <div className="p-3 bg-muted rounded-lg">
                 <p className="font-medium">💬 Natural Conversation</p>
