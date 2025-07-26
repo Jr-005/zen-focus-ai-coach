@@ -299,9 +299,18 @@ export class RealtimeVoiceChat {
     try {
       const encodedAudio = await encodeAudioForAPI(audioBlob);
       
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No authentication session found');
+      }
+      
       // Send audio to voice-process function
       const { data, error } = await supabase.functions.invoke('voice-process', {
-        body: { audioData: encodedAudio }
+        body: { audioData: encodedAudio },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
 
       if (error) throw error;
@@ -334,9 +343,18 @@ export class RealtimeVoiceChat {
     this.processing = true;
     
     try {
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No authentication session found');
+      }
+      
       // Send text to voice-process function
       const { data, error } = await supabase.functions.invoke('voice-process', {
-        body: { text }
+        body: { text },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
 
       if (error) throw error;
@@ -359,9 +377,18 @@ export class RealtimeVoiceChat {
 
   private async synthesizeAndPlayResponse(text: string): Promise<void> {
     try {
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No authentication session found');
+      }
+      
       // Get speech synthesis
       const { data, error } = await supabase.functions.invoke('voice-synthesize', {
-        body: { text }
+        body: { text },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
 
       if (error) throw error;
