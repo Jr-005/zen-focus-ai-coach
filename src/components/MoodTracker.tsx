@@ -116,15 +116,15 @@ export const MoodTracker = () => {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="space-x-1 lg:space-x-2 shadow-sm hover:shadow-md transition-all duration-300">
+        <Button variant="outline" size="sm" className="space-x-2">
           {getMoodIcon()}
-          <span className="text-xs lg:text-sm hidden sm:inline">
+          <span className="text-xs">
             {currentMood ? 'Mood' : 'Check In'}
           </span>
           {currentMood && (
             <Badge 
               variant="secondary" 
-              className={cn("text-xs px-1 lg:px-2", getEnergyColor(currentMood.energy))}
+              className={cn("text-xs px-1", getEnergyColor(currentMood.energy))}
             >
               {currentMood.energy}%
             </Badge>
@@ -132,23 +132,23 @@ export const MoodTracker = () => {
         </Button>
       </PopoverTrigger>
       
-      <PopoverContent className="w-72 lg:w-80 p-4 lg:p-5 shadow-xl border-border/50 bg-card/95 backdrop-blur-sm" align="end">
+      <PopoverContent className="w-80 p-4" align="end">
         <div className="space-y-4">
           <div>
-            <h3 className="font-medium mb-3 text-sm lg:text-base">How are you feeling?</h3>
-            <div className="grid grid-cols-3 gap-2 lg:gap-3">
+            <h3 className="font-medium mb-2">How are you feeling?</h3>
+            <div className="grid grid-cols-3 gap-2">
               {moods.map((mood) => (
                 <Button
                   key={mood.id}
                   variant="outline"
                   onClick={() => updateMood(mood)}
                   className={cn(
-                    "flex flex-col items-center space-y-1 h-auto p-2 lg:p-3 transition-all duration-300",
-                    "hover:scale-105 hover:shadow-md border-border/50"
+                    "flex flex-col items-center space-y-1 h-auto p-3 transition-all",
+                    "hover:scale-105 hover:shadow-md"
                   )}
                 >
-                  <span className="text-lg lg:text-xl">{mood.emoji}</span>
-                  <span className="text-xs lg:text-sm">{mood.label}</span>
+                  <span className="text-lg">{mood.emoji}</span>
+                  <span className="text-xs">{mood.label}</span>
                 </Button>
               ))}
             </div>
@@ -156,10 +156,10 @@ export const MoodTracker = () => {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm lg:text-base font-medium">Energy Level</label>
+              <label className="text-sm font-medium">Energy Level</label>
               <div className="flex items-center space-x-1">
                 {getEnergyIcon(energy[0])}
-                <span className="text-sm lg:text-base font-medium">{energy[0]}%</span>
+                <span className="text-sm font-medium">{energy[0]}%</span>
               </div>
             </div>
             
@@ -172,7 +172,7 @@ export const MoodTracker = () => {
                 step={10}
                 className="w-full"
               />
-              <div className="flex justify-between text-xs lg:text-sm text-muted-foreground">
+              <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Drained</span>
                 <span>Energized</span>
               </div>
@@ -180,12 +180,12 @@ export const MoodTracker = () => {
           </div>
 
           {currentMood && (
-            <Card className="p-3 lg:p-4 bg-accent/20 border-accent/30">
+            <Card className="p-3 bg-accent/20">
               <div className="text-sm">
-                <p className="font-medium mb-2 text-sm lg:text-base">Last Check-in</p>
+                <p className="font-medium mb-1">Last Check-in</p>
                 <div className="flex items-center justify-between">
                   <span>{currentMood.emoji} {moods.find(m => m.id === currentMood.mood)?.label}</span>
-                  <span className="text-muted-foreground text-xs lg:text-sm">
+                  <span className="text-muted-foreground">
                     {currentMood.timestamp.toLocaleTimeString([], { 
                       hour: '2-digit', 
                       minute: '2-digit' 
@@ -194,13 +194,13 @@ export const MoodTracker = () => {
                 </div>
                 <div className="flex items-center space-x-2 mt-1">
                   {getEnergyIcon(currentMood.energy)}
-                  <span className="text-xs lg:text-sm">Energy: {currentMood.energy}%</span>
+                  <span className="text-xs">Energy: {currentMood.energy}%</span>
                 </div>
               </div>
             </Card>
           )}
 
-          <div className="text-xs lg:text-sm text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             💡 Regular mood check-ins help your AI coach provide better personalized advice
           </div>
         </div>

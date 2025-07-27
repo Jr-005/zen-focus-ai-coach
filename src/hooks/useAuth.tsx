@@ -9,7 +9,6 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
-  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -20,51 +19,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error getting session:', error);
-          // If JWT expired, try to refresh
-          if (error.message?.includes('JWT expired')) {
-            await supabase.auth.refreshSession();
-          }
-        } else {
-          setSession(session);
-          setUser(session?.user ?? null);
-        }
-      } catch (error) {
-        console.error('Error in getInitialSession:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    // Listen for auth state changes
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session);
-        
-        if (event === 'TOKEN_REFRESHED') {
-          console.log('Token refreshed successfully');
-        }
-        
-        if (event === 'SIGNED_OUT' || !session) {
-          setSession(null);
-          setUser(null);
-        } else {
-          setSession(session);
-          setUser(session.user);
-        }
-        
-        setLoading(false);
+      (event, session) => {
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
       }
-    );
+    )
 
-    return () => subscription.unsubscribe();
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const signUp = async (email: string, password: string, fullName: string) => {
@@ -91,20 +62,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error }
   }
 
-  const refreshSession = async () => {
-    try {
-      const { data, error } = await supabase.auth.refreshSession();
-      if (error) {
-        console.error('Failed to refresh session:', error);
-        throw error;
-      }
-      console.log('Session refreshed successfully');
-    } catch (error) {
-      console.error('Error refreshing session:', error);
-      throw error;
-    }
-  }
-
   const signOut = async () => {
     try {
       await supabase.auth.signOut({ scope: 'global' })
@@ -121,8 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       loading,
       signUp,
       signIn,
-      signOut,
-      refreshSession
+      signOut
     }}>
       {children}
     </AuthContext.Provider>

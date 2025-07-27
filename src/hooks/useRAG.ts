@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { getValidAccessToken } from '@/utils/tokenUtils';
-import { invokeWithValidToken } from '@/utils/tokenUtils';
-import { queryVoiceNotes } from '@/utils/authenticatedRequests';
 import { useToast } from '@/components/ui/use-toast';
 
 interface VoiceNote {
@@ -29,7 +26,7 @@ export const useRAG = () => {
       console.log('Saving voice note:', content.substring(0, 100));
 
       // Generate embedding for the content
-      const { data: embeddingData, error: embeddingError } = await invokeWithValidToken(
+      const { data: embeddingData, error: embeddingError } = await supabase.functions.invoke(
         'generate-embeddings',
         { 
           body: { text: content }
@@ -45,11 +42,6 @@ export const useRAG = () => {
       console.log('Generated embedding for note, length:', embedding.length);
 
       // Save note with embedding to database
-      const accessToken = await getValidAccessToken();
-      if (!accessToken) {
-        throw new Error('No valid access token available');
-      }
-      
       const { data, error } = await supabase
         .from('voice_notes')
         .insert({
@@ -93,7 +85,7 @@ export const useRAG = () => {
       setLoading(true);
       console.log('Querying RAG for:', query);
 
-      const { data, error } = await invokeWithValidToken('rag-query', {
+      const { data, error } = await supabase.functions.invoke('rag-query', {
         body: { 
           query,
           topK,
@@ -129,17 +121,17 @@ export const useRAG = () => {
 
   const getVoiceNotes = async (limit: number = 10): Promise<VoiceNote[]> => {
     try {
-      console.log('Fetching voice notes with limit:', limit);
-      
-      // Use direct REST API call with fresh token
-      const { data, error } = await queryVoiceNotes(limit);
-      
+      const { data, error } = await supabase
+        .from('voice_notes')
+        .select('id, content, summary, created_at')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
       if (error) {
         console.error('Error fetching voice notes:', error);
         throw new Error('Failed to fetch notes');
       }
 
-      console.log('Successfully fetched voice notes:', data?.length || 0);
       return data || [];
 
     } catch (error) {
@@ -155,11 +147,6 @@ export const useRAG = () => {
 
   const deleteVoiceNote = async (id: string): Promise<boolean> => {
     try {
-      const accessToken = await getValidAccessToken();
-      if (!accessToken) {
-        throw new Error('No valid access token available');
-      }
-      
       const { error } = await supabase
         .from('voice_notes')
         .delete()

@@ -1,401 +1,350 @@
-import { supabase } from "@/integrations/supabase/client";
-import { invokeWithValidToken } from "./tokenUtils";
-
 export class AudioRecorder {
-  private mediaRecorder: MediaRecorder | null = null;
-  private audioStream: MediaStream | null = null;
-  private audioChunks: Blob[] = [];
-  private isRecording = false;
+  private stream: MediaStream | null = null;
+  private audioContext: AudioContext | null = null;
+  private processor: ScriptProcessorNode | null = null;
+  private source: MediaStreamAudioSourceNode | null = null;
 
-  constructor(private onAudioData?: (audioBlob: Blob) => void) {}
+  constructor(private onAudioData: (audioData: Float32Array) => void) {}
 
-  async start(): Promise<void> {
+  async start() {
     try {
-      this.audioStream = await navigator.mediaDevices.getUserMedia({ 
+      this.stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          sampleRate: 16000,
+          sampleRate: 24000,
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
-        } 
+          autoGainControl: true
+        }
       });
       
-      this.mediaRecorder = new MediaRecorder(this.audioStream, {
-        mimeType: 'audio/webm;codecs=opus'
+      this.audioContext = new AudioContext({
+        sampleRate: 24000,
       });
       
-      this.audioChunks = [];
+      this.source = this.audioContext.createMediaStreamSource(this.stream);
+      this.processor = this.audioContext.createScriptProcessor(4096, 1, 1);
       
-      this.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          this.audioChunks.push(event.data);
-        }
+      this.processor.onaudioprocess = (e) => {
+        const inputData = e.inputBuffer.getChannelData(0);
+        this.onAudioData(new Float32Array(inputData));
       };
       
-      this.mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-        if (this.onAudioData) {
-          this.onAudioData(audioBlob);
-        }
-        this.audioChunks = [];
-      };
-      
-      this.mediaRecorder.start();
-      this.isRecording = true;
+      this.source.connect(this.processor);
+      this.processor.connect(this.audioContext.destination);
     } catch (error) {
-      console.error('Error starting audio recording:', error);
+      console.error('Error accessing microphone:', error);
       throw error;
     }
   }
 
-  stop(): void {
-    if (this.mediaRecorder && this.isRecording) {
-      this.mediaRecorder.stop();
-      this.isRecording = false;
+  stop() {
+    if (this.source) {
+      this.source.disconnect();
+      this.source = null;
     }
-    
-    if (this.audioStream) {
-      this.audioStream.getTracks().forEach(track => track.stop());
-      this.audioStream = null;
+    if (this.processor) {
+      this.processor.disconnect();
+      this.processor = null;
     }
-  }
-
-  getIsRecording(): boolean {
-    return this.isRecording;
+    if (this.stream) {
+      this.stream.getTracks().forEach(track => track.stop());
+      this.stream = null;
+    }
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
   }
 }
 
-// Convert audio blob to base64 for API transmission
-export async function encodeAudioForAPI(audioBlob: Blob): Promise<string> {
-  const arrayBuffer = await audioBlob.arrayBuffer();
-  const uint8Array = new Uint8Array(arrayBuffer);
+export const encodeAudioForAPI = (float32Array: Float32Array): string => {
+  const int16Array = new Int16Array(float32Array.length);
+  for (let i = 0; i < float32Array.length; i++) {
+    const s = Math.max(-1, Math.min(1, float32Array[i]));
+    int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+  }
   
-  // Convert to base64
+  const uint8Array = new Uint8Array(int16Array.buffer);
   let binary = '';
-  const chunkSize = 32768;
+  const chunkSize = 0x8000;
+  
   for (let i = 0; i < uint8Array.length; i += chunkSize) {
-    const chunk = uint8Array.slice(i, i + chunkSize);
-    binary += String.fromCharCode(...chunk);
+    const chunk = uint8Array.subarray(i, Math.min(i + chunkSize, uint8Array.length));
+    binary += String.fromCharCode.apply(null, Array.from(chunk));
   }
   
   return btoa(binary);
-}
+};
 
-// Audio playback utilities
-export class AudioPlayer {
-  private audioContext: AudioContext | null = null;
-  private currentSource: AudioBufferSourceNode | null = null;
+export const createWavFromPCM = (pcmData: Uint8Array): Uint8Array => {
+  // Convert bytes to 16-bit samples (little endian)
+  const int16Data = new Int16Array(pcmData.length / 2);
+  for (let i = 0; i < pcmData.length; i += 2) {
+    int16Data[i / 2] = (pcmData[i + 1] << 8) | pcmData[i];
+  }
+  
+  // Create WAV header
+  const wavHeader = new ArrayBuffer(44);
+  const view = new DataView(wavHeader);
+  
+  const writeString = (view: DataView, offset: number, string: string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
 
-  async init() {
-    this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
-    // Resume audio context if it's suspended
-    if (this.audioContext.state === 'suspended') {
-      await this.audioContext.resume();
+  // WAV header parameters
+  const sampleRate = 24000;
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const blockAlign = (numChannels * bitsPerSample) / 8;
+  const byteRate = sampleRate * blockAlign;
+
+  // Write WAV header
+  writeString(view, 0, 'RIFF');
+  view.setUint32(4, 36 + int16Data.byteLength, true);
+  writeString(view, 8, 'WAVE');
+  writeString(view, 12, 'fmt ');
+  view.setUint32(16, 16, true); // Subchunk1Size
+  view.setUint16(20, 1, true); // AudioFormat (PCM)
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+  writeString(view, 36, 'data');
+  view.setUint32(40, int16Data.byteLength, true);
+
+  // Combine header and data
+  const wavArray = new Uint8Array(wavHeader.byteLength + int16Data.byteLength);
+  wavArray.set(new Uint8Array(wavHeader), 0);
+  wavArray.set(new Uint8Array(int16Data.buffer), wavHeader.byteLength);
+  
+  return wavArray;
+};
+
+export class AudioQueue {
+  private queue: Uint8Array[] = [];
+  private isPlaying = false;
+  private audioContext: AudioContext;
+
+  constructor(audioContext: AudioContext) {
+    this.audioContext = audioContext;
+  }
+
+  async addToQueue(audioData: Uint8Array) {
+    this.queue.push(audioData);
+    if (!this.isPlaying) {
+      await this.playNext();
     }
   }
 
-  async playAudio(base64Audio: string): Promise<void> {
-    if (!this.audioContext) {
-      await this.init();
+  private async playNext() {
+    if (this.queue.length === 0) {
+      this.isPlaying = false;
+      return;
     }
+
+    this.isPlaying = true;
+    const audioData = this.queue.shift()!;
 
     try {
-      // Convert base64 to array buffer
-      const binaryString = atob(base64Audio);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-
-      // Decode audio data
-      const audioBuffer = await this.audioContext!.decodeAudioData(bytes.buffer);
+      const wavData = createWavFromPCM(audioData);
+      const audioBuffer = await this.audioContext.decodeAudioData(wavData.buffer);
       
-      // Stop any currently playing audio
-      if (this.currentSource) {
-        this.currentSource.stop();
-      }
-
-      // Create and play new audio source
-      this.currentSource = this.audioContext!.createBufferSource();
-      this.currentSource.buffer = audioBuffer;
-      this.currentSource.connect(this.audioContext!.destination);
-      this.currentSource.start(0);
-
-      return new Promise((resolve) => {
-        this.currentSource!.onended = () => {
-          resolve();
-        };
-      });
+      const source = this.audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(this.audioContext.destination);
+      
+      source.onended = () => this.playNext();
+      source.start(0);
     } catch (error) {
       console.error('Error playing audio:', error);
-      throw error;
+      this.playNext(); // Continue with next segment even if current fails
     }
   }
 
-  stop(): void {
-    if (this.currentSource) {
-      this.currentSource.stop();
-      this.currentSource = null;
-    }
+  clear() {
+    this.queue = [];
   }
 }
 
-// Voice Activity Detection - simple implementation
-export class VoiceActivityDetector {
-  private analyser: AnalyserNode | null = null;
-  private dataArray: Uint8Array | null = null;
-  private isActive = false;
-  private silenceThreshold = 30; // Adjust based on environment
-  private silenceCount = 0;
-  private maxSilenceFrames = 20; // ~1 second at 50fps
+let audioQueueInstance: AudioQueue | null = null;
 
-  constructor(private audioStream: MediaStream, private onVoiceStart: () => void, private onVoiceEnd: () => void) {}
-
-  init() {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const source = audioContext.createMediaStreamSource(this.audioStream);
-    this.analyser = audioContext.createAnalyser();
-    this.analyser.fftSize = 256;
-    this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-    source.connect(this.analyser);
-    
-    this.startDetection();
+export const playAudioData = async (audioContext: AudioContext, audioData: Uint8Array) => {
+  if (!audioQueueInstance) {
+    audioQueueInstance = new AudioQueue(audioContext);
   }
+  await audioQueueInstance.addToQueue(audioData);
+};
 
-  private startDetection() {
-    const checkVoiceActivity = () => {
-      if (!this.analyser || !this.dataArray) return;
-
-      this.analyser.getByteFrequencyData(this.dataArray);
-      
-      // Calculate average volume
-      const average = this.dataArray.reduce((acc, value) => acc + value, 0) / this.dataArray.length;
-      
-      if (average > this.silenceThreshold) {
-        // Voice detected
-        if (!this.isActive) {
-          this.isActive = true;
-          this.onVoiceStart();
-        }
-        this.silenceCount = 0;
-      } else {
-        // Silence detected
-        if (this.isActive) {
-          this.silenceCount++;
-          if (this.silenceCount >= this.maxSilenceFrames) {
-            this.isActive = false;
-            this.onVoiceEnd();
-          }
-        }
-      }
-      
-      requestAnimationFrame(checkVoiceActivity);
-    };
-    
-    checkVoiceActivity();
-  }
-
-  getIsActive(): boolean {
-    return this.isActive;
-  }
-}
-
-// Main class for HTTP-based voice chat
 export class RealtimeVoiceChat {
-  private recorder: AudioRecorder | null = null;
-  private player: AudioPlayer | null = null;
-  private vad: VoiceActivityDetector | null = null;
-  private connected = false;
-  private recording = false;
-  private processing = false;
-
+  private ws: WebSocket | null = null;
+  private audioRecorder: AudioRecorder | null = null;
+  private audioContext: AudioContext | null = null;
+  private audioQueue: AudioQueue | null = null;
+  private isConnected = false;
+  private isRecording = false;
+  
   constructor(
     private onMessage: (message: any) => void,
     private onSpeakingChange: (speaking: boolean) => void,
     private onConnectionChange: (connected: boolean) => void
   ) {}
 
-  async connect(): Promise<void> {
+  async connect() {
     try {
-      this.player = new AudioPlayer();
-      await this.player.init();
+      // Initialize audio context
+      this.audioContext = new AudioContext({ sampleRate: 24000 });
+      this.audioQueue = new AudioQueue(this.audioContext);
+
+      // Get WebSocket URL for the environment
+      const response = await fetch('/api/project-info');
+      const projectInfo = await response.json();
+      const projectRef = projectInfo.project_ref;
       
-      this.connected = true;
-      this.onConnectionChange(true);
+      const wsUrl = `wss://${projectRef}.functions.supabase.co/functions/v1/openai-realtime`;
       
-      console.log('Voice chat connected (HTTP mode)');
+      this.ws = new WebSocket(wsUrl);
+      
+      this.ws.onopen = () => {
+        console.log('Connected to realtime voice chat');
+        this.isConnected = true;
+        this.onConnectionChange(true);
+      };
+
+      this.ws.onmessage = async (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          console.log('Received message:', message);
+          
+          this.onMessage(message);
+          
+          // Handle audio output
+          if (message.type === 'response.audio.delta') {
+            this.onSpeakingChange(true);
+            
+            // Convert base64 to Uint8Array
+            const binaryString = atob(message.delta);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            if (this.audioContext && this.audioQueue) {
+              await this.audioQueue.addToQueue(bytes);
+            }
+          } else if (message.type === 'response.audio.done') {
+            this.onSpeakingChange(false);
+          }
+          
+        } catch (error) {
+          console.error('Error parsing message:', error);
+        }
+      };
+
+      this.ws.onclose = () => {
+        console.log('WebSocket closed');
+        this.isConnected = false;
+        this.onConnectionChange(false);
+      };
+
+      this.ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        this.isConnected = false;
+        this.onConnectionChange(false);
+      };
+
     } catch (error) {
-      console.error('Error connecting voice chat:', error);
-      this.onConnectionChange(false);
+      console.error('Error connecting:', error);
       throw error;
     }
   }
 
-  async startRecording(): Promise<void> {
-    if (this.recording || this.processing) return;
+  async startRecording() {
+    if (!this.audioContext || !this.ws || !this.isConnected) {
+      throw new Error('Not connected to voice chat');
+    }
 
     try {
-      this.recorder = new AudioRecorder(async (audioBlob) => {
-        await this.processAudio(audioBlob);
-      });
-
-      // Get audio stream for VAD
-      const audioStream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          sampleRate: 16000,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-        } 
-      });
-
-      // Set up voice activity detection
-      this.vad = new VoiceActivityDetector(
-        audioStream,
-        () => {
-          console.log('Voice activity started');
-          this.recorder?.start();
-        },
-        () => {
-          console.log('Voice activity ended');
-          this.recorder?.stop();
+      this.audioRecorder = new AudioRecorder((audioData) => {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          const encodedAudio = encodeAudioForAPI(audioData);
+          this.ws.send(JSON.stringify({
+            type: 'input_audio_buffer.append',
+            audio: encodedAudio
+          }));
         }
-      );
+      });
 
-      this.vad.init();
-      this.recording = true;
+      await this.audioRecorder.start();
+      this.isRecording = true;
+      console.log('Recording started');
     } catch (error) {
       console.error('Error starting recording:', error);
       throw error;
     }
   }
 
-  stopRecording(): void {
-    if (this.recorder) {
-      this.recorder.stop();
-      this.recorder = null;
+  stopRecording() {
+    if (this.audioRecorder) {
+      this.audioRecorder.stop();
+      this.audioRecorder = null;
+      this.isRecording = false;
+      console.log('Recording stopped');
     }
-    this.recording = false;
   }
 
-  async sendTextMessage(text: string): Promise<void> {
-    if (!this.connected) {
+  sendTextMessage(text: string) {
+    if (!this.ws || !this.isConnected) {
       throw new Error('Not connected to voice chat');
     }
 
-    try {
-      await this.processText(text);
-    } catch (error) {
-      console.error('Error sending text message:', error);
-      this.onMessage({ type: 'error', content: 'Failed to send message' });
-    }
+    const event = {
+      type: 'conversation.item.create',
+      item: {
+        type: 'message',
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text
+          }
+        ]
+      }
+    };
+
+    this.ws.send(JSON.stringify(event));
+    this.ws.send(JSON.stringify({ type: 'response.create' }));
   }
 
-  private async processAudio(audioBlob: Blob): Promise<void> {
-    if (this.processing) return;
-    
-    this.processing = true;
-    
-    try {
-      const encodedAudio = await encodeAudioForAPI(audioBlob);
-      
-      // Send audio to voice-process function with automatic token refresh
-      const { data, error } = await invokeWithValidToken('voice-process', {
-        body: { audioData: encodedAudio }
-      });
-
-      if (error) throw error;
-
-      // Handle response
-      this.onMessage({
-        type: 'transcript',
-        content: data.transcript
-      });
-
-      this.onMessage({
-        type: 'response',
-        content: data.response
-      });
-
-      // Synthesize speech response
-      await this.synthesizeAndPlayResponse(data.response);
-
-    } catch (error) {
-      console.error('Error processing audio:', error);
-      this.onMessage({ type: 'error', content: 'Failed to process audio' });
-    } finally {
-      this.processing = false;
-    }
-  }
-
-  private async processText(text: string): Promise<void> {
-    if (this.processing) return;
-    
-    this.processing = true;
-    
-    try {
-      // Send text to voice-process function with automatic token refresh
-      const { data, error } = await invokeWithValidToken('voice-process', {
-        body: { text }
-      });
-
-      if (error) throw error;
-
-      this.onMessage({
-        type: 'response',
-        content: data.response
-      });
-
-      // Synthesize speech response
-      await this.synthesizeAndPlayResponse(data.response);
-
-    } catch (error) {
-      console.error('Error processing text:', error);
-      this.onMessage({ type: 'error', content: 'Failed to process text' });
-    } finally {
-      this.processing = false;
-    }
-  }
-
-  private async synthesizeAndPlayResponse(text: string): Promise<void> {
-    try {
-      // Get speech synthesis with automatic token refresh
-      const { data, error } = await invokeWithValidToken('voice-synthesize', {
-        body: { text }
-      });
-
-      if (error) throw error;
-
-      // Play the audio
-      this.onSpeakingChange(true);
-      await this.player!.playAudio(data.audio);
-      this.onSpeakingChange(false);
-
-    } catch (error) {
-      console.error('Error synthesizing speech:', error);
-      this.onSpeakingChange(false);
-    }
-  }
-
-  disconnect(): void {
+  disconnect() {
     this.stopRecording();
     
-    if (this.player) {
-      this.player.stop();
+    if (this.audioQueue) {
+      this.audioQueue.clear();
     }
     
-    this.connected = false;
-    this.onConnectionChange(false);
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
     
-    console.log('Voice chat disconnected');
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+    
+    this.isConnected = false;
+    this.onConnectionChange(false);
   }
 
-  isConnectedToChat(): boolean {
-    return this.connected;
+  isConnectedToChat() {
+    return this.isConnected;
   }
 
-  isCurrentlyRecording(): boolean {
-    return this.recording;
+  isCurrentlyRecording() {
+    return this.isRecording;
   }
 }

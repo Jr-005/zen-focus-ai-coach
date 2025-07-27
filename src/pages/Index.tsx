@@ -1,140 +1,151 @@
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Mic, Brain, Timer, Target, Heart, MessageSquare, Lightbulb, CheckSquare } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Plus, Target, Brain, Timer, Mic, MicOff, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import { TodoManager } from '@/components/TodoManager';
-import { FocusTimer } from '@/components/FocusTimer';
 import { GoalTracker } from '@/components/GoalTracker';
+import { FocusTimer } from '@/components/FocusTimer';
+import { AIAssistant } from '@/components/AIAssistant';
+import { VoiceAgent } from '@/components/VoiceAgent';
+import { FullVoiceAssistant } from '@/components/FullVoiceAssistant';
 import { MoodTracker } from '@/components/MoodTracker';
 import { MotivationalQuote } from '@/components/MotivationalQuote';
-import { FullVoiceAssistant } from '@/components/FullVoiceAssistant';
 import NotesManager from '@/components/NotesManager';
-import { AITaskSuggestions } from '@/components/AITaskSuggestions';
-import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
-  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'tasks' | 'goals' | 'focus' | 'ai' | 'voice' | 'notes'>('voice');
+  const [isListening, setIsListening] = useState(false);
+  const { signOut, user } = useAuth();
 
-  const features = [
-    {
-      icon: <Mic className="h-6 w-6" />,
-      title: "Voice AI Assistant",
-      description: "Natural conversation with memory and context awareness",
-      badge: "AI Powered"
-    },
-    {
-      icon: <Brain className="h-6 w-6" />,
-      title: "Smart Memory",
-      description: "Your AI remembers conversations and learns from your notes",
-      badge: "RAG System"
-    },
-    {
-      icon: <CheckSquare className="h-6 w-6" />,
-      title: "Task Management",
-      description: "AI-suggested tasks with natural language input",
-      badge: "Intelligent"
-    },
-    {
-      icon: <Timer className="h-6 w-6" />,
-      title: "Focus Timer",
-      description: "Pomodoro technique with productivity tracking",
-      badge: "Productivity"
-    }
-  ];
+  const tabs = [
+    { id: 'voice', label: 'Voice Agent', icon: Mic },
+    { id: 'tasks', label: 'Tasks', icon: Plus },
+    { id: 'goals', label: 'Goals', icon: Target },
+    { id: 'focus', label: 'Focus', icon: Timer },
+    { id: 'notes', label: 'Notes', icon: Brain },
+    { id: 'ai', label: 'AI Chat', icon: Brain },
+  ] as const;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent mb-4">
-            AI-Powered Productivity Suite
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Your intelligent companion for tasks, focus, and personal growth with advanced AI memory
-          </p>
-        </div>
-
-        {/* Feature Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {features.map((feature, index) => (
-            <Card key={index} className="relative overflow-hidden group hover:shadow-lg transition-all duration-300">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                    {feature.icon}
-                  </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {feature.badge}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <h3 className="font-semibold mb-1">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Main Content */}
-        <Tabs defaultValue="assistant" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-6">
-            <TabsTrigger value="assistant" className="flex items-center gap-2">
-              <Mic className="h-4 w-4" />
-              <span className="hidden sm:inline">AI Assistant</span>
-            </TabsTrigger>
-            <TabsTrigger value="tasks" className="flex items-center gap-2">
-              <CheckSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Tasks</span>
-            </TabsTrigger>
-            <TabsTrigger value="focus" className="flex items-center gap-2">
-              <Timer className="h-4 w-4" />
-              <span className="hidden sm:inline">Focus</span>
-            </TabsTrigger>
-            <TabsTrigger value="wellness" className="flex items-center gap-2">
-              <Heart className="h-4 w-4" />
-              <span className="hidden sm:inline">Wellness</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="assistant" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <FullVoiceAssistant />
-              <NotesManager />
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/30 to-primary/10">
+      {/* Header */}
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center animate-zen-breathe">
+                <Timer className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  FocusZen
+                </h1>
+                <p className="text-sm text-muted-foreground">Your AI Productivity Assistant</p>
+              </div>
             </div>
-          </TabsContent>
+            
+            <div className="flex items-center space-x-4">
+              <MoodTracker />
+              <Button
+                variant={isListening ? "default" : "outline"}
+                size="sm"
+                onClick={() => setIsListening(!isListening)}
+                className={isListening ? "animate-focus-pulse" : ""}
+              >
+                {isListening ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+                {isListening ? "Listening..." : "Voice"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={signOut}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
 
-          <TabsContent value="tasks" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <TodoManager />
-              <AITaskSuggestions 
-                taskTitle="Daily Planning"
-                onApplySuggestion={(suggestion) => {
-                  // Handle suggestion application
-                  console.log('Applied suggestion:', suggestion);
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-6">
+        {/* Motivational Quote */}
+        <div className="mb-6">
+          <MotivationalQuote />
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex space-x-2 mb-6 p-1 bg-card rounded-lg border border-border/50 shadow-sm">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <Button
+                key={tab.id}
+                variant={activeTab === tab.id ? "default" : "ghost"}
+                onClick={() => setActiveTab(tab.id)}
+                className="flex-1 transition-all duration-300"
+              >
+                <Icon className="w-4 h-4 mr-2" />
+                {tab.label}
+              </Button>
+            );
+          })}
+        </div>
+
+        {/* Content Sections */}
+        <div className="animate-fade-in">
+          {activeTab === 'voice' && (
+            <div className="flex justify-center">
+              <FullVoiceAssistant
+                onTaskCreated={(task) => {
+                  // Switch to tasks tab and refresh
+                  setActiveTab('tasks');
+                }}
+                onSessionStarted={() => {
+                  setActiveTab('focus');
+                }}
+                onNoteCreated={(note) => {
+                  // Could add notes tab in future
+                  console.log('Note created:', note);
                 }}
               />
             </div>
-          </TabsContent>
+          )}
 
-          <TabsContent value="focus" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <FocusTimer />
+          {activeTab === 'tasks' && (
+            <Card className="p-6 shadow-zen border-border/50">
+              <TodoManager />
+            </Card>
+          )}
+          
+          {activeTab === 'goals' && (
+            <Card className="p-6 shadow-zen border-border/50">
               <GoalTracker />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="wellness" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <MoodTracker />
-              <MotivationalQuote />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+            </Card>
+          )}
+          
+          {activeTab === 'focus' && (
+            <Card className="p-6 shadow-zen border-border/50">
+              <FocusTimer />
+            </Card>
+          )}
+          
+          {activeTab === 'notes' && (
+            <Card className="p-6 shadow-zen border-border/50">
+              <NotesManager />
+            </Card>
+          )}
+          
+          {activeTab === 'ai' && (
+            <Card className="p-6 shadow-zen border-border/50">
+              <AIAssistant isListening={isListening} setIsListening={setIsListening} />
+            </Card>
+          )}
+        </div>
+      </main>
     </div>
   );
 };
