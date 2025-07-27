@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { invokeWithValidToken } from "./tokenUtils";
 
 export class AudioRecorder {
   private mediaRecorder: MediaRecorder | null = null;
@@ -299,18 +300,9 @@ export class RealtimeVoiceChat {
     try {
       const encodedAudio = await encodeAudioForAPI(audioBlob);
       
-      // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('No authentication session found');
-      }
-      
-      // Send audio to voice-process function
-      const { data, error } = await supabase.functions.invoke('voice-process', {
-        body: { audioData: encodedAudio },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+      // Send audio to voice-process function with automatic token refresh
+      const { data, error } = await invokeWithValidToken('voice-process', {
+        body: { audioData: encodedAudio }
       });
 
       if (error) throw error;
@@ -343,18 +335,9 @@ export class RealtimeVoiceChat {
     this.processing = true;
     
     try {
-      // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('No authentication session found');
-      }
-      
-      // Send text to voice-process function
-      const { data, error } = await supabase.functions.invoke('voice-process', {
-        body: { text },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+      // Send text to voice-process function with automatic token refresh
+      const { data, error } = await invokeWithValidToken('voice-process', {
+        body: { text }
       });
 
       if (error) throw error;
@@ -377,18 +360,9 @@ export class RealtimeVoiceChat {
 
   private async synthesizeAndPlayResponse(text: string): Promise<void> {
     try {
-      // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('No authentication session found');
-      }
-      
-      // Get speech synthesis
-      const { data, error } = await supabase.functions.invoke('voice-synthesize', {
-        body: { text },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+      // Get speech synthesis with automatic token refresh
+      const { data, error } = await invokeWithValidToken('voice-synthesize', {
+        body: { text }
       });
 
       if (error) throw error;

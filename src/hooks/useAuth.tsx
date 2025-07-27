@@ -9,6 +9,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
+  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -90,6 +91,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error }
   }
 
+  const refreshSession = async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error('Failed to refresh session:', error);
+        throw error;
+      }
+      console.log('Session refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing session:', error);
+      throw error;
+    }
+  }
+
   const signOut = async () => {
     try {
       await supabase.auth.signOut({ scope: 'global' })
@@ -106,7 +121,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       loading,
       signUp,
       signIn,
-      signOut
+      signOut,
+      refreshSession
     }}>
       {children}
     </AuthContext.Provider>
