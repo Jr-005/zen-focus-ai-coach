@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { enhancedSupabase } from '@/utils/enhancedSupabaseClient';
+import { invokeWithValidToken } from '@/utils/tokenUtils';
 import { useToast } from '@/components/ui/use-toast';
 
 interface VoiceNote {
@@ -26,7 +28,7 @@ export const useRAG = () => {
       console.log('Saving voice note:', content.substring(0, 100));
 
       // Generate embedding for the content
-      const { data: embeddingData, error: embeddingError } = await supabase.functions.invoke(
+      const { data: embeddingData, error: embeddingError } = await invokeWithValidToken(
         'generate-embeddings',
         { 
           body: { text: content }
@@ -42,8 +44,8 @@ export const useRAG = () => {
       console.log('Generated embedding for note, length:', embedding.length);
 
       // Save note with embedding to database
-      const { data, error } = await supabase
-        .from('voice_notes')
+      const supabaseClient = await enhancedSupabase.from('voice_notes');
+      const { data, error } = await supabaseClient
         .insert({
           content,
           summary,
@@ -85,7 +87,7 @@ export const useRAG = () => {
       setLoading(true);
       console.log('Querying RAG for:', query);
 
-      const { data, error } = await supabase.functions.invoke('rag-query', {
+      const { data, error } = await invokeWithValidToken('rag-query', {
         body: { 
           query,
           topK,
@@ -121,8 +123,9 @@ export const useRAG = () => {
 
   const getVoiceNotes = async (limit: number = 10): Promise<VoiceNote[]> => {
     try {
-      const { data, error } = await supabase
-        .from('voice_notes')
+      console.log('Fetching voice notes with limit:', limit);
+      const supabaseClient = await enhancedSupabase.from('voice_notes');
+      const { data, error } = await supabaseClient
         .select('id, content, summary, created_at')
         .order('created_at', { ascending: false })
         .limit(limit);
@@ -147,8 +150,8 @@ export const useRAG = () => {
 
   const deleteVoiceNote = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('voice_notes')
+      const supabaseClient = await enhancedSupabase.from('voice_notes');
+      const { error } = await supabaseClient
         .delete()
         .eq('id', id);
 

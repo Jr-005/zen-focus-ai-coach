@@ -19,6 +19,7 @@ export function isTokenExpired(expiresAt: number, bufferSeconds = 60): boolean {
  */
 export async function getValidAccessToken(): Promise<string | null> {
   try {
+    console.log('Getting valid access token...');
     // Get current session
     const { data: { session }, error } = await supabase.auth.getSession();
     
@@ -28,9 +29,12 @@ export async function getValidAccessToken(): Promise<string | null> {
     }
     
     if (!session) {
-      console.error('No session found');
+      console.error('No session found - user needs to log in');
       return null;
     }
+    
+    console.log('Current session expires at:', new Date(session.expires_at * 1000));
+    console.log('Token expired?', isTokenExpired(session.expires_at || 0));
     
     // Check if token is expired or will expire soon
     if (isTokenExpired(session.expires_at || 0)) {
