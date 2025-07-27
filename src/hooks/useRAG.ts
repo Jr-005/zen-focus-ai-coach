@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { enhancedSupabase } from '@/utils/enhancedSupabaseClient';
+import { getValidAccessToken } from '@/utils/tokenUtils';
 import { invokeWithValidToken } from '@/utils/tokenUtils';
+import { queryVoiceNotes } from '@/utils/authenticatedRequests';
 import { useToast } from '@/components/ui/use-toast';
 
 interface VoiceNote {
@@ -44,8 +45,13 @@ export const useRAG = () => {
       console.log('Generated embedding for note, length:', embedding.length);
 
       // Save note with embedding to database
-      const supabaseClient = await enhancedSupabase.from('voice_notes');
-      const { data, error } = await supabaseClient
+      const accessToken = await getValidAccessToken();
+      if (!accessToken) {
+        throw new Error('No valid access token available');
+      }
+      
+      const { data, error } = await supabase
+        .from('voice_notes')
         .insert({
           content,
           summary,
@@ -124,17 +130,16 @@ export const useRAG = () => {
   const getVoiceNotes = async (limit: number = 10): Promise<VoiceNote[]> => {
     try {
       console.log('Fetching voice notes with limit:', limit);
-      const supabaseClient = await enhancedSupabase.from('voice_notes');
-      const { data, error } = await supabaseClient
-        .select('id, content, summary, created_at')
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
+      
+      // Use direct REST API call with fresh token
+      const { data, error } = await queryVoiceNotes(limit);
+      
       if (error) {
         console.error('Error fetching voice notes:', error);
         throw new Error('Failed to fetch notes');
       }
 
+      console.log('Successfully fetched voice notes:', data?.length || 0);
       return data || [];
 
     } catch (error) {
@@ -150,8 +155,13 @@ export const useRAG = () => {
 
   const deleteVoiceNote = async (id: string): Promise<boolean> => {
     try {
-      const supabaseClient = await enhancedSupabase.from('voice_notes');
-      const { error } = await supabaseClient
+      const accessToken = await getValidAccessToken();
+      if (!accessToken) {
+        throw new Error('No valid access token available');
+      }
+      
+      const { error } = await supabase
+        .from('voice_notes')
         .delete()
         .eq('id', id);
 
