@@ -1,0 +1,34 @@
+project_id = "oodxparkhdvlljdftswg"
+
+[functions.voice-process]
+verify_jwt = true
+
+[functions.voice-transcription]
+verify_jwt = true
+
+[functions.text-to-speech]
+verify_jwt = true
+
+[functions.voice-synthesize]
+verify_jwt = true
+
+[functions.groq-suggestions]
+verify_jwt = true
+
+[functions.parse-task-nlp]
+verify_jwt = true
+
+[functions.rag-query]
+verify_jwt = true
+
+[functions.generate-embeddings]
+verify_jwt = true
+
+[functions.openai-realtime]
+verify_jwt = true
+
+[functions.assemblyai-stream]
+verify_jwt = true
+
+[functions.project-info]
+verify_jwt = false

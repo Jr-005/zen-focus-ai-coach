@@ -7,8 +7,11 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('Voice process function called', { method: req.method, url: req.url });
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -27,6 +30,36 @@ serve(async (req) => {
       }
     }
 
+    // Get and validate Authorization header
+    const authHeader = req.headers.get('Authorization');
+    console.log('Auth header:', authHeader ? 'present' : 'missing');
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('Missing or invalid Authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Authorization header required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Verify the JWT token and get user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error('Invalid JWT token:', authError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('User authenticated:', user.id);
+
     const requestBody = await req.json();
     const { audioData, text } = requestBody;
     console.log('Request received:', { hasAudioData: !!audioData, hasText: !!text })
@@ -37,14 +70,6 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
-    // Get auth header and initialize Supabase client
-    const authHeader = req.headers.get('Authorization');
-    console.log('Auth header present:', !!authHeader)
-    
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     let transcribedText = text;
 
