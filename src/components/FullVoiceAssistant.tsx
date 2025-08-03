@@ -350,11 +350,20 @@ export const FullVoiceAssistant = ({
   };
 
   return (
-    <Card className="flex flex-col h-[600px] lg:h-[700px] w-full shadow-xl border-border/50 bg-card/95 backdrop-blur-sm">
+    <Card className="flex flex-col h-[700px] w-full shadow-large border-border/50 bg-gradient-card">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 lg:p-6 border-b border-border/50 bg-gradient-to-r from-primary/5 to-primary-glow/5">
-        <div className="flex items-center space-x-3 mb-3 sm:mb-0">
-          <Avatar className="w-10 h-10 lg:w-12 lg:h-12 shadow-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between space-component border-b border-border/50 bg-gradient-primary/5">
+        <div className="flex items-center space-x-4 mb-3 sm:mb-0">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-subtle">
+            <Mic className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <div className="space-tight">
+            <h3 className="text-title">AI Voice Assistant</h3>
+            <p className="text-caption">Natural conversations with memory</p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Avatar className="w-10 h-10 lg:w-12 lg:h-12 shadow-medium">
             <AvatarFallback>
               <Bot className="w-5 h-5 lg:w-6 lg:h-6" />
             </AvatarFallback>
