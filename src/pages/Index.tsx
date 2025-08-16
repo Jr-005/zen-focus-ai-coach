@@ -207,6 +207,10 @@ const Index = () => {
               <MotivationalQuote />
             </div>
           </TabsContent>
+
+          <TabsContent value="creative" className="space-relaxed">
+            <CreativeMode />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
