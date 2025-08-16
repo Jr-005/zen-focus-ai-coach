@@ -1,166 +1,304 @@
-# ZenVA – AI-Powered Voice Personal Assistant
+# Zen Productivity Assistant
 
-**Your intelligent voice-activated productivity assistant for automating tasks, organizing your day, and staying focused — built with AssemblyAI real-time transcription and lightning-fast AI responses.**
+**An AI-powered productivity suite with voice interaction, task management, focus tracking, and intelligent conversation capabilities.**
 
-## DEV x AssemblyAI Challenge Submission
+---
 
-**Track:** Business Automation Voice Agent  
-**Title:** ZenVA – AI-Powered Voice Personal Assistant  
-**GitHub Repo:** [GitHub](https://github.com/Jr-005/zen-focus-ai-coach)  
+## 🚀 Overview
 
-### Description:
-ZenVA is an AI-powered personal assistant that automates productivity and daily planning through real-time voice interaction. By leveraging AssemblyAI's ultra-fast Universal-Streaming API, ZenVA captures spoken input, processes it through an intelligent LLM agent (GROQ + RAG), and automates tasks, reminders, focus sessions, and summaries. It helps users stay on top of their goals with voice-driven automation.
+Zen Productivity Assistant is a comprehensive web application that combines AI-powered voice interaction with traditional productivity tools. It features real-time voice commands, intelligent task management, focus session tracking, and an AI assistant that learns from your conversations and notes.
 
-## Features
+## ✨ Core Features
 
-- 🎤 **Real-Time Voice Commands** – Powered by AssemblyAI Universal-Streaming for instant transcription
-- 🧠 **RAG-Powered Memory System** – AI remembers your conversations and references past notes
-- 📅 **Smart Scheduling Assistant** – Automatically create reminders and to-dos from voice
-- 🤖 **LLM-Powered Task Planning** – Converts your speech into structured plans using context
-- ✅ **Context-Aware Task Manager** – Organizes and prioritizes tasks intelligently
-- 🧘 **Focus & Break Guidance** – Voice coaching to manage deep work sessions
-- 📝 **Voice Notes with Semantic Search** – AI-indexed notes with vector similarity search
-- 🔍 **Intelligent Context Retrieval** – Finds relevant past conversations automatically
+### 🎤 **AI Voice Assistant**
+- **Full Voice Assistant**: Complete voice interaction with real-time audio processing
+- **Natural Language Processing**: Convert speech to actionable tasks and notes
+- **Voice Input Components**: Modular voice recording and transcription
+- **Text-to-Speech**: AI responses played back as audio
 
-## Use Case Examples
+### 🤖 **AI Chat Assistant**
+- **Contextual Conversations**: AI assistant with memory and conversation history
+- **Categorized Responses**: Planning, motivation, coaching, and analysis modes
+- **Quick Actions**: Predefined productivity shortcuts
+- **Conversation Persistence**: All chats saved and retrievable
 
-- Say: "Remind me to call John at 3PM tomorrow." → It adds a reminder.
-- Say: "What's on my to-do list for today?" → It reads back your agenda.
-- Say: "Summarize my last focus session." → You get a voice-based report.
-- Say: "Take a note: Meeting with Sarah went well. Discussed Q3 goals." → Creates and stores a summarized note.
+### ✅ **Smart Task Management**
+- **Natural Language Task Creation**: Create tasks from voice or text input
+- **AI Task Suggestions**: Intelligent recommendations based on context
+- **Priority Management**: Organize tasks by importance and due dates
+- **Task Analytics**: Track completion rates and productivity patterns
 
-## Powered by AssemblyAI
+### 🧘 **Focus & Productivity Tools**
+- **Pomodoro Timer**: Focus sessions with customizable work/break intervals
+- **Session Tracking**: Monitor focus time and productivity metrics
+- **Motivational Coaching**: AI-powered encouragement and tips
+- **Progress Analytics**: Visual insights into focus patterns
 
-ZenVA uses AssemblyAI's Universal-Streaming API to transcribe voice in real-time with <300ms latency, allowing fast and natural interaction with the AI assistant. The transcription data is then used to:
+### 📝 **Intelligent Notes System**
+- **Voice Notes**: Record and transcribe audio notes automatically
+- **RAG (Retrieval Augmented Generation)**: Semantic search through your notes
+- **Smart Summarization**: AI-generated summaries of long content
+- **Context-Aware Retrieval**: Find relevant information from past conversations
 
-- Trigger task creation or reminders
-- Perform NLP parsing for intent detection
-- Pass to GROQ + RAG for intelligent response
+### 🎯 **Goal & Mood Tracking**
+- **Goal Progress Monitoring**: Set and track long-term objectives
+- **Mood Analytics**: Daily mood tracking with insights
+- **Motivational Quotes**: Dynamic inspiration based on your progress
 
-## Tech Stack
+## 🏗️ Architecture & Tech Stack
 
-### Frontend
-- ⚛️ React 18 with TypeScript for type-safe development
-- 🚀 Vite for lightning-fast builds and development
-- 🎨 shadcn-ui + Tailwind CSS for beautiful, customizable UI
-- 🎙️ Web Audio API for voice input handling
+### **Frontend**
+- **React 18** with TypeScript for type-safe development
+- **Vite** for lightning-fast builds and hot reload
+- **Tailwind CSS** with custom design system for consistent styling
+- **shadcn/ui** components for beautiful, accessible UI
+- **React Router** for client-side navigation
+- **React Hook Form** with Zod validation
 
-### Backend & Infrastructure
-- ⚡ Supabase for:
-  - Real-time data synchronization
-  - Edge Functions deployment
-  - User authentication
-  - Database storage
-- 🧠 AI Integration:
-  - GROQ for ultra-fast LLM responses
-  - RAG (Retrieval Augmented Generation) for context-aware responses
-  - AssemblyAI Universal-Streaming API for real-time transcription
-  - OpenAI for task analysis and natural language processing
+### **Backend & Database**
+- **Supabase** as the backend-as-a-service platform:
+  - PostgreSQL database with Row Level Security (RLS)
+  - Real-time subscriptions
+  - User authentication and authorization
+  - Edge Functions for serverless compute
+  - File storage capabilities
 
-## Environment Setup
+### **AI & ML Integration**
+- **OpenAI API** for natural language processing and chat completion
+- **GROQ** for ultra-fast LLM responses
+- **AssemblyAI** for real-time speech transcription
+- **RAG System** for intelligent information retrieval
+- **Vector Embeddings** for semantic search
 
-Before running the project, you'll need to set up the following environment variables:
+### **Audio Processing**
+- **Web Audio API** for voice recording
+- **Real-time Audio Processing** for voice commands
+- **WebRTC** for low-latency audio streaming
 
-```env
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+## 📊 Database Schema
 
-# AI Services
-VITE_ASSEMBLYAI_API_KEY=your_assemblyai_api_key
-VITE_GROQ_API_KEY=your_groq_api_key
-VITE_OPENAI_API_KEY=your_openai_api_key
+The application uses the following main tables:
 
-# Optional: Analytics & Monitoring
-VITE_POSTHOG_KEY=your_posthog_key
-VITE_SENTRY_DSN=your_sentry_dsn
+### **Users & Authentication**
+- Leverages Supabase Auth for user management
+- Row Level Security policies protect all user data
+
+### **Core Data Tables**
+```sql
+-- Tasks with priority and completion tracking
+tasks (id, user_id, title, description, priority, completed, due_date, created_at, updated_at)
+
+-- Focus session tracking
+focus_sessions (id, user_id, session_type, duration_minutes, completed, completed_at, created_at)
+
+-- AI conversation history
+ai_conversations (id, user_id, message_type, content, category, created_at)
+
+-- Voice notes with semantic search
+voice_notes (id, user_id, content, summary, created_at)
 ```
 
-Create a `.env` file in the root directory and add these variables. Never commit this file to version control.
+## 🛠️ Setup & Installation
 
-## How can I edit this code?
+### **Prerequisites**
+- Node.js 18+ and npm
+- Supabase account and project
+- API keys for AI services (OpenAI, GROQ, AssemblyAI)
 
-There are several ways of editing your application.
+### **1. Clone the Repository**
+```bash
+git clone <your-repo-url>
+cd zen-productivity-assistant
+npm install
+```
 
-**Use your preferred IDE**
+### **2. Environment Configuration**
+Create a `.env.local` file:
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+# AI Service API Keys
+VITE_OPENAI_API_KEY=your_openai_api_key
+VITE_GROQ_API_KEY=your_groq_api_key
+VITE_ASSEMBLYAI_API_KEY=your_assemblyai_api_key
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### **3. Database Setup**
+The database schema is automatically created through Supabase migrations. Make sure to:
+1. Create a new Supabase project
+2. Enable Row Level Security
+3. Set up authentication providers as needed
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### **4. Development Server**
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Access the application at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🔐 Authentication & Security
 
-**Use GitHub Codespaces**
+### **Authentication Flow**
+- Email/password authentication via Supabase Auth
+- Protected routes require authentication
+- Session management with automatic token refresh
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### **Security Features**
+- Row Level Security (RLS) policies on all tables
+- User data isolation and protection
+- Secure API key management
+- CORS configuration for edge functions
 
-## What technologies are used for this project?
+## 🚀 Deployment
 
-This project is built with:
+### **Build for Production**
+```bash
+npm run build
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### **Deploy to Vercel**
+```bash
+vercel deploy
+```
 
-## Development Workflow
+### **Deploy to Netlify**
+```bash
+netlify deploy --prod
+```
 
-1. **Branch Management**
-   - Create feature branches from `main`
-   - Use conventional commits (e.g., `feat:`, `fix:`, `docs:`)
-   - Submit PRs for review before merging
+### **Environment Variables**
+Set up the same environment variables in your hosting platform's dashboard.
 
-2. **Testing**
-   - Run `npm test` to execute test suite
-   - Ensure all AI integration tests pass
-   - Test voice features in different browsers
+## 🧪 Testing
 
-3. **Code Quality**
-   - Run `npm run lint` to check code style
-   - Run `npm run type-check` for TypeScript validation
-   - Use provided VS Code settings for consistent formatting
+### **Run Tests**
+```bash
+npm test
+```
 
-## Deployment
+### **AI Integration Tests**
+```bash
+npm run test:ai
+```
 
-### Manual Deployment
+### **Type Checking**
+```bash
+npm run type-check
+```
 
-1. Build the project:
-   ```sh
-   npm run build
-   ```
+## 📁 Project Structure
 
-2. Deploy to your preferred platform:
-   - Vercel: `vercel deploy`
-   - Netlify: `netlify deploy`
-   - Or any static hosting service
+```
+src/
+├── components/           # React components
+│   ├── ui/              # Reusable UI components (shadcn)
+│   ├── AIAssistant.tsx  # AI chat interface
+│   ├── VoiceAgent.tsx   # Voice interaction handler
+│   ├── TodoManager.tsx  # Task management
+│   ├── FocusTimer.tsx   # Pomodoro timer
+│   └── ...
+├── hooks/               # Custom React hooks
+│   ├── useAuth.tsx      # Authentication logic
+│   ├── useAI.ts         # AI integration
+│   ├── useRAG.ts        # RAG system
+│   └── ...
+├── pages/               # Application pages
+├── lib/                 # Utility functions
+├── integrations/        # External service integrations
+│   └── supabase/        # Supabase client and types
+└── utils/               # Helper utilities
 
-3. Set up environment variables on your hosting platform
+supabase/
+├── functions/           # Edge functions
+└── migrations/          # Database schema
+```
 
-### Custom Domain Setup
+## 🔌 API & Edge Functions
 
-To set up a custom domain, follow the documentation of your chosen hosting platform (Vercel, Netlify, etc.) for adding and configuring custom domains.
+### **Available Edge Functions**
+- `voice-transcription` - Convert speech to text
+- `text-to-speech` - Generate audio from text
+- `groq-suggestions` - AI-powered task suggestions
+- `parse-task-nlp` - Natural language task parsing
+- `rag-query` - Semantic search through notes
+- `generate-embeddings` - Create vector embeddings
+- `openai-realtime` - Real-time AI chat
+
+### **Usage Example**
+```typescript
+const { data, error } = await supabase.functions.invoke('groq-suggestions', {
+  body: { context: 'I need to organize my day' }
+});
+```
+
+## 🤝 Contributing
+
+### **Development Workflow**
+1. Create a feature branch from `main`
+2. Make your changes following the established patterns
+3. Run tests and type checking
+4. Submit a pull request with a clear description
+
+### **Code Style**
+- Use TypeScript for all new code
+- Follow the established component patterns
+- Use semantic commit messages
+- Ensure accessibility best practices
+
+### **Testing Guidelines**
+- Write unit tests for utility functions
+- Test AI integrations with mock data
+- Ensure voice features work across browsers
+
+## 📚 Usage Examples
+
+### **Voice Commands**
+```
+"Add a task to call Sarah tomorrow at 2 PM"
+"Start a 25-minute focus session"
+"What did I accomplish yesterday?"
+"Take a note about the marketing meeting"
+"Show me my high-priority tasks"
+```
+
+### **API Integration**
+```typescript
+// Create a task programmatically
+const { data } = await supabase
+  .from('tasks')
+  .insert({
+    title: 'Review quarterly report',
+    priority: 'high',
+    due_date: new Date().toISOString()
+  });
+```
+
+## 🔧 Troubleshooting
+
+### **Common Issues**
+- **Voice not working**: Check microphone permissions
+- **AI responses slow**: Verify API keys and rate limits  
+- **Database errors**: Ensure RLS policies are properly configured
+- **Build failures**: Check TypeScript errors and dependencies
+
+### **Debug Mode**
+Enable debug logging by setting `VITE_DEBUG=true` in your environment.
+
+## 📄 License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [Lovable](https://lovable.dev) - AI-powered development platform
+- Powered by [Supabase](https://supabase.com) for backend infrastructure
+- UI components from [shadcn/ui](https://ui.shadcn.com)
+- AI capabilities from OpenAI, GROQ, and AssemblyAI
+
+---
+
+**Ready to boost your productivity with AI?** 🚀
+
+For questions, support, or contributions, please open an issue or contact the development team.
