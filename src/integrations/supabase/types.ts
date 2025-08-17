@@ -41,6 +41,51 @@ export type Database = {
         }
         Relationships: []
       }
+      creative_documents: {
+        Row: {
+          cleaned_content: string | null
+          content: string
+          created_at: string
+          document_type: string
+          export_format: string | null
+          id: string
+          original_transcription: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          word_count: number
+        }
+        Insert: {
+          cleaned_content?: string | null
+          content?: string
+          created_at?: string
+          document_type?: string
+          export_format?: string | null
+          id?: string
+          original_transcription?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          word_count?: number
+        }
+        Update: {
+          cleaned_content?: string | null
+          content?: string
+          created_at?: string
+          document_type?: string
+          export_format?: string | null
+          id?: string
+          original_transcription?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          word_count?: number
+        }
+        Relationships: []
+      }
       focus_sessions: {
         Row: {
           completed: boolean | null
@@ -113,6 +158,101 @@ export type Database = {
         }
         Relationships: []
       }
+      habit_completions: {
+        Row: {
+          completion_date: string
+          count: number | null
+          created_at: string | null
+          habit_id: string
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          completion_date?: string
+          count?: number | null
+          created_at?: string | null
+          habit_id: string
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          completion_date?: string
+          count?: number | null
+          created_at?: string | null
+          habit_id?: string
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_completions_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "habit_completions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habits: {
+        Row: {
+          category: string | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          frequency: Database["public"]["Enums"]["habit_frequency"] | null
+          id: string
+          is_active: boolean | null
+          target_count: number | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          frequency?: Database["public"]["Enums"]["habit_frequency"] | null
+          id?: string
+          is_active?: boolean | null
+          target_count?: number | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          frequency?: Database["public"]["Enums"]["habit_frequency"] | null
+          id?: string
+          is_active?: boolean | null
+          target_count?: number | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mood_entries: {
         Row: {
           created_at: string
@@ -170,6 +310,145 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          delivery_method: string | null
+          enabled: boolean | null
+          id: string
+          notification_type: string
+          settings: Json | null
+          timing_offset: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          delivery_method?: string | null
+          enabled?: boolean | null
+          id?: string
+          notification_type: string
+          settings?: Json | null
+          timing_offset?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          delivery_method?: string | null
+          enabled?: boolean | null
+          id?: string
+          notification_type?: string
+          settings?: Json | null
+          timing_offset?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      productivity_metrics: {
+        Row: {
+          average_energy: number | null
+          average_mood: number | null
+          created_at: string | null
+          focus_minutes: number | null
+          focus_sessions: number | null
+          goals_completed: number | null
+          habits_completed: number | null
+          id: string
+          period_end: string
+          period_start: string
+          period_type: Database["public"]["Enums"]["metric_period"]
+          productivity_score: number | null
+          tasks_completed: number | null
+          tasks_created: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          average_energy?: number | null
+          average_mood?: number | null
+          created_at?: string | null
+          focus_minutes?: number | null
+          focus_sessions?: number | null
+          goals_completed?: number | null
+          habits_completed?: number | null
+          id?: string
+          period_end: string
+          period_start: string
+          period_type: Database["public"]["Enums"]["metric_period"]
+          productivity_score?: number | null
+          tasks_completed?: number | null
+          tasks_created?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          average_energy?: number | null
+          average_mood?: number | null
+          created_at?: string | null
+          focus_minutes?: number | null
+          focus_sessions?: number | null
+          goals_completed?: number | null
+          habits_completed?: number | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          period_type?: Database["public"]["Enums"]["metric_period"]
+          productivity_score?: number | null
+          tasks_completed?: number | null
+          tasks_created?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "productivity_metrics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          preferences: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          preferences?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          preferences?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           completed: boolean | null
@@ -206,6 +485,82 @@ export type Database = {
         }
         Relationships: []
       }
+      user_insights: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          insight_type: string
+          is_read: boolean | null
+          metadata: Json | null
+          priority: number | null
+          title: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          insight_type: string
+          is_read?: boolean | null
+          metadata?: Json | null
+          priority?: number | null
+          title: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          insight_type?: string
+          is_read?: boolean | null
+          metadata?: Json | null
+          priority?: number | null
+          title?: string
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_insights_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       voice_notes: {
         Row: {
           content: string
@@ -235,10 +590,41 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_habit_streak: {
+        Args: { check_date?: string; habit_uuid: string }
+        Returns: number
+      }
+      calculate_productivity_score: {
+        Args: {
+          average_mood?: number
+          focus_minutes: number
+          goals_completed: number
+          habits_completed: number
+          tasks_completed: number
+          tasks_created: number
+        }
+        Returns: number
+      }
+      generate_daily_metrics: {
+        Args: { target_date?: string }
+        Returns: undefined
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      goal_category: "personal" | "career" | "health" | "learning" | "financial"
+      habit_frequency: "daily" | "weekly" | "monthly"
+      metric_period: "daily" | "weekly" | "monthly"
+      mood_type: "amazing" | "great" | "good" | "okay" | "low" | "stressed"
+      session_type: "focus" | "short-break" | "long-break"
+      task_priority: "low" | "medium" | "high"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -365,6 +751,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      goal_category: ["personal", "career", "health", "learning", "financial"],
+      habit_frequency: ["daily", "weekly", "monthly"],
+      metric_period: ["daily", "weekly", "monthly"],
+      mood_type: ["amazing", "great", "good", "okay", "low", "stressed"],
+      session_type: ["focus", "short-break", "long-break"],
+      task_priority: ["low", "medium", "high"],
+    },
   },
 } as const

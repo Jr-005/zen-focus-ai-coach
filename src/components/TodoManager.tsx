@@ -76,7 +76,7 @@ export const TodoManager = () => {
         completed: task.completed,
         priority: task.priority as 'low' | 'medium' | 'high',
         dueDate: task.due_date,
-        goalId: task.goal_id,
+        goalId: task.goal_id || null,
         createdAt: new Date(task.created_at),
       }));
       

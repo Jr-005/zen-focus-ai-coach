@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Mic, Brain, Timer, Target, Heart, MessageSquare, Lightbulb, CheckSquare, 
-  Settings, User, Sparkles, TrendingUp, Clock, Activity
+  Settings, User, Sparkles, TrendingUp, Clock, Activity, Wand2
 } from 'lucide-react';
 import { TodoManager } from '@/components/TodoManager';
 import { FocusTimer } from '@/components/FocusTimer';
@@ -16,6 +16,7 @@ import { MotivationalQuote } from '@/components/MotivationalQuote';
 import { FullVoiceAssistant } from '@/components/FullVoiceAssistant';
 import NotesManager from '@/components/NotesManager';
 import { AITaskSuggestions } from '@/components/AITaskSuggestions';
+import { CreativeMode } from '@/components/CreativeMode';
 import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
@@ -132,7 +133,7 @@ const Index = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="assistant" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-8 h-14 bg-muted/30 backdrop-blur-sm border border-border/50 rounded-xl p-1">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 mb-8 h-14 bg-muted/30 backdrop-blur-sm border border-border/50 rounded-xl p-1">
             <TabsTrigger 
               value="assistant" 
               className="flex items-center gap-3 h-12 rounded-lg font-medium data-[state=active]:bg-background data-[state=active]:shadow-subtle transition-all duration-200"
@@ -160,6 +161,13 @@ const Index = () => {
             >
               <Heart className="h-4 w-4" />
               <span className="hidden sm:inline">Wellness</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="creative" 
+              className="flex items-center gap-3 h-12 rounded-lg font-medium data-[state=active]:bg-background data-[state=active]:shadow-subtle transition-all duration-200"
+            >
+              <Wand2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Creative</span>
             </TabsTrigger>
           </TabsList>
 

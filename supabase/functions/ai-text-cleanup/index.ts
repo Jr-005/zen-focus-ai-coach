@@ -1,77 +1,69 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
 interface TextCleanupRequest {
-  text: string;
-  documentType: string;
-  options?: {
-    tone?: 'professional' | 'casual' | 'creative' | 'academic';
-    style?: 'concise' | 'detailed' | 'narrative' | 'technical';
-    action?: 'improve' | 'restructure' | 'summarize' | 'expand';
-  };
-  instructions?: string;
+  text: string
+  outputType: 'article' | 'story' | 'note' | 'blog' | 'email' | 'summary'
+  style?: 'formal' | 'casual' | 'academic' | 'creative'
+  instructions?: string
 }
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     // Verify JWT token
-    const authHeader = req.headers.get('Authorization');
+    const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      throw new Error('No authorization header');
+      throw new Error('No authorization header')
     }
 
     // Get Groq API key from environment
-    const groqApiKey = Deno.env.get('GROQ_API_KEY');
+    const groqApiKey = Deno.env.get('GROQ_API_KEY')
     if (!groqApiKey) {
-      throw new Error('Groq API key not configured');
+      throw new Error('Groq API key not configured')
     }
 
     // Parse request body
-    const { text, documentType, options = {}, instructions }: TextCleanupRequest = await req.json();
+    const { text, outputType, style = 'casual', instructions = '' }: TextCleanupRequest = await req.json()
 
-    if (!text || typeof text !== 'string') {
-      throw new Error('Text content is required');
+    if (!text || text.trim().length === 0) {
+      throw new Error('No text provided')
     }
 
-    if (text.length > 10000) {
-      throw new Error('Text too long (max 10,000 characters)');
+    // Create system prompt based on output type and style
+    const getSystemPrompt = (type: string, styleType: string) => {
+      const basePrompt = `You are an expert writing assistant. Your task is to clean up, structure, and improve transcribed text.`
+      
+      const typePrompts = {
+        article: 'Transform this into a well-structured article with proper headings, introduction, body, and conclusion.',
+        story: 'Turn this into an engaging narrative story with proper flow, character development, and storytelling elements.',
+        note: 'Organize this into clear, concise notes with bullet points and proper structure.',
+        blog: 'Convert this into an engaging blog post with a catchy introduction, clear sections, and a compelling conclusion.',
+        email: 'Format this as a professional email with proper greeting, body, and closing.',
+        summary: 'Create a concise summary that captures the key points and main ideas.'
+      }
+
+      const stylePrompts = {
+        formal: 'Use formal language, proper grammar, and professional tone.',
+        casual: 'Use conversational tone while maintaining clarity and readability.',
+        academic: 'Use academic writing style with proper citations format and scholarly tone.',
+        creative: 'Use creative language, metaphors, and engaging storytelling techniques.'
+      }
+
+      return `${basePrompt} ${typePrompts[type]} ${stylePrompts[styleType]} ${instructions ? `Additional instructions: ${instructions}` : ''}`
     }
 
-    // Build comprehensive system prompt
-    const systemPrompt = `You are an expert writing assistant and editor. Your task is to clean up, structure, and improve text content based on the specified document type and user preferences.
+    const systemPrompt = getSystemPrompt(outputType, style)
 
-Document Type: ${documentType}
-${instructions ? `Instructions: ${instructions}` : ''}
-${options.tone ? `Tone: ${options.tone}` : ''}
-${options.style ? `Style: ${options.style}` : ''}
-${options.action ? `Primary Action: ${options.action}` : ''}
-
-Guidelines:
-1. Maintain the original meaning and intent
-2. Fix grammar, spelling, and punctuation errors
-3. Improve sentence structure and flow
-4. Organize content logically with appropriate formatting
-5. Preserve the author's voice while enhancing clarity
-6. Add appropriate headings, bullet points, or structure as needed
-7. Ensure the content matches the specified document type
-
-Return ONLY the cleaned and improved text without any explanations or metadata.`;
-
-    const userPrompt = `Please clean up and improve this ${documentType}:
-
-${text}`;
-
-    // Call Groq API for text processing
+    // Call Groq API for text cleanup
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -79,54 +71,56 @@ ${text}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-70b-versatile',
+        model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: `Please clean up and improve this transcribed text:\n\n${text}`
+          }
         ],
-        temperature: 0.3,
-        max_tokens: 2000,
+        temperature: 0.7,
+        max_tokens: 4000,
+        top_p: 0.9
       }),
-    });
+    })
 
     if (!groqResponse.ok) {
-      const errorData = await groqResponse.text();
-      console.error('Groq API error:', errorData);
-      throw new Error(`Groq API error: ${groqResponse.status}`);
+      const errorText = await groqResponse.text()
+      console.error('Groq API error:', errorText)
+      throw new Error(`Groq API error: ${groqResponse.status}`)
     }
 
-    const groqData = await groqResponse.json();
-    const processedText = groqData.choices[0]?.message?.content;
+    const result = await groqResponse.json()
+    const cleanedText = result.choices[0]?.message?.content
 
-    if (!processedText) {
-      throw new Error('No response from Groq');
+    if (!cleanedText) {
+      throw new Error('No cleaned text received from API')
     }
 
-    // Calculate improvement metrics
-    const originalWordCount = text.trim().split(/\s+/).length;
-    const processedWordCount = processedText.trim().split(/\s+/).length;
-    const improvementRatio = processedWordCount / originalWordCount;
+    // Calculate word count
+    const wordCount = cleanedText.trim().split(/\s+/).length
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        processedText: processedText.trim(),
-        cleanedText: processedText.trim(), // Alias for backward compatibility
-        metrics: {
-          originalWordCount,
-          processedWordCount,
-          improvementRatio,
-          documentType,
-          options
-        }
+      JSON.stringify({
+        success: true,
+        cleanedText,
+        originalText: text,
+        outputType,
+        style,
+        wordCount,
+        model: 'llama-3.3-70b-versatile'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+      },
+    )
 
   } catch (error) {
-    console.error('Error in ai-text-cleanup function:', error);
+    console.error('Error in ai-text-cleanup function:', error)
     
     return new Response(
       JSON.stringify({ 
@@ -136,7 +130,7 @@ ${text}`;
       {
         status: error.message.includes('authorization') ? 401 : 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+      },
+    )
   }
-});
+})

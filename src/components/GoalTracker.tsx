@@ -63,7 +63,7 @@ export const GoalTracker = () => {
         category: goal.category as Goal['category'],
         targetDate: goal.target_date,
         progress: goal.progress,
-        milestones: goal.milestones || [],
+        milestones: Array.isArray(goal.milestones) ? goal.milestones.map(m => String(m)) : [],
         createdAt: new Date(goal.created_at),
       }));
       
