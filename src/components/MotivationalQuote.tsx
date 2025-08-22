@@ -151,57 +151,58 @@ export const MotivationalQuote = () => {
   }
 
   return (
-    <Card className={cn(
-      "p-4 lg:p-6 relative overflow-hidden transition-all duration-500 animate-fade-in shadow-lg",
-      "bg-gradient-to-br",
-      getCategoryColor(currentQuote.category),
-      "border-border/50 backdrop-blur-sm"
-    )}>
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-16 h-16 lg:w-20 lg:h-20 opacity-10">
-        {getCategoryIcon(currentQuote.category)}
-      </div>
-      
-      <div className="relative space-y-3 lg:space-y-4">
-        {/* Greeting */}
-        <div className="text-sm lg:text-base text-muted-foreground font-medium">
-          {getGreeting()}
+    <Card className="card-glass relative overflow-hidden animate-fade-in shadow-xl">
+      <CardContent className={cn(
+        "p-6 lg:p-8 relative bg-gradient-to-br",
+        getCategoryColor(currentQuote.category)
+      )}>
+        {/* Background decoration */}
+        <div className="absolute top-4 right-4 w-16 h-16 lg:w-20 lg:h-20 opacity-10 animate-float">
+          {getCategoryIcon(currentQuote.category)}
         </div>
+        
+        <div className="relative space-y-4 lg:space-y-6">
+          {/* Greeting */}
+          <div className="flex items-center gap-2 text-sm lg:text-base text-muted-foreground font-medium">
+            <Sparkles className="w-4 h-4" />
+            {getGreeting()}
+          </div>
 
-        {/* Quote */}
-        <div className="space-y-2 lg:space-y-3">
-          <blockquote className="text-base lg:text-lg xl:text-xl font-medium text-foreground leading-relaxed">
-            "{currentQuote.text}"
-          </blockquote>
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <cite className="text-sm lg:text-base text-muted-foreground not-italic">
-              — {currentQuote.author}
-            </cite>
+          {/* Quote */}
+          <div className="space-y-4">
+            <blockquote className="text-lg lg:text-xl xl:text-2xl font-semibold text-foreground leading-relaxed">
+              "{currentQuote.text}"
+            </blockquote>
             
-            <div className="flex items-center space-x-2">
-              {getCategoryIcon(currentQuote.category)}
-              <span className="text-xs lg:text-sm text-muted-foreground capitalize">
-                {currentQuote.category}
-              </span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <cite className="text-base lg:text-lg text-muted-foreground not-italic font-medium">
+                — {currentQuote.author}
+              </cite>
+              
+              <div className="flex items-center gap-2">
+                {getCategoryIcon(currentQuote.category)}
+                <Badge variant="secondary" className="badge-enhanced capitalize">
+                  {currentQuote.category}
+                </Badge>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Refresh Button */}
-        <div className="flex justify-center pt-1 lg:pt-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={generateContextualQuote}
-            disabled={isGenerating}
-            className="text-xs lg:text-sm opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-105"
-          >
-            <RefreshCw className={cn("w-3 h-3 lg:w-4 lg:h-4 mr-1", isGenerating && "animate-spin")} />
-            {isGenerating ? "Generating..." : "New Quote"}
-          </Button>
+          {/* Refresh Button */}
+          <div className="flex justify-center pt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={generateContextualQuote}
+              disabled={isGenerating}
+              className="button-enhanced hover:bg-background/50"
+            >
+              <RefreshCw className={cn("w-4 h-4 mr-2", isGenerating && "animate-spin")} />
+              {isGenerating ? "Generating..." : "New Quote"}
+            </Button>
+          </div>
         </div>
-      </div>
+      </CardContent>
     </Card>
   );
 };
