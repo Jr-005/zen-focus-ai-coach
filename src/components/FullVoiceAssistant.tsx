@@ -350,47 +350,40 @@ export const FullVoiceAssistant = ({
   };
 
   return (
-    <Card className="flex flex-col h-[700px] w-full shadow-large border-border/50 bg-gradient-card">
+    <Card className="flex flex-col h-[700px] w-full card-glass shadow-xl">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between space-component border-b border-border/50 bg-gradient-primary/5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 border-b border-border/30 bg-gradient-to-r from-primary/5 to-primary-glow/5">
         <div className="flex items-center space-x-4 mb-3 sm:mb-0">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-subtle">
-            <Mic className="h-6 w-6 text-primary-foreground" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-primary shadow-medium animate-zen-breathe">
+            <Brain className="h-7 w-7 text-primary-foreground" />
           </div>
           <div className="space-tight">
-            <h3 className="text-title">AI Voice Assistant</h3>
+            <h3 className="text-title text-gradient-primary">ZenVA Assistant</h3>
             <p className="text-caption">Natural conversations with memory</p>
           </div>
         </div>
         <div className="flex items-center space-x-3">
-          <Avatar className="w-10 h-10 lg:w-12 lg:h-12 shadow-medium">
-            <AvatarFallback>
-              <Bot className="w-5 h-5 lg:w-6 lg:h-6" />
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="font-semibold text-lg lg:text-xl flex items-center gap-2">
-              <Brain className="w-5 h-5 lg:w-6 lg:h-6 text-primary" />
-              ZenVA Voice Assistant with Memory
-            </h3>
-            <div className="flex items-center space-x-2 mt-1">
-              <Circle className={cn("w-3 h-3 rounded-full", getStatusColor())} />
-              <p className="text-sm lg:text-base text-muted-foreground font-medium">{getStatusText()}</p>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className={cn("status-dot", isConnected ? "status-online" : "status-offline")}></div>
+              <span className="text-sm font-medium">{getStatusText()}</span>
             </div>
           </div>
-        </div>
-        
-        <div className="flex items-center space-x-2 lg:space-x-3">
-          <Badge variant={isConnected ? 'default' : 'secondary'} className="shadow-sm">
+          <Avatar className="w-10 h-10 lg:w-12 lg:h-12 avatar-enhanced">
+            <AvatarFallback>
+              <Brain className="w-5 h-5 lg:w-6 lg:h-6 text-primary" />
+            </AvatarFallback>
+          </Avatar>
+          <Badge variant={isConnected ? 'default' : 'secondary'} className="badge-enhanced">
             {isConnected ? 'Live' : 'Offline'}
           </Badge>
           {isConnected ? (
-            <Button onClick={disconnectFromVoiceChat} variant="outline" size="sm" className="shadow-sm">
+            <Button onClick={disconnectFromVoiceChat} variant="outline" size="sm" className="button-enhanced">
               <Square className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Disconnect</span>
             </Button>
           ) : (
-            <Button onClick={connectToVoiceChat} size="sm" disabled={connectionStatus === 'connecting'} className="shadow-sm">
+            <Button onClick={connectToVoiceChat} size="sm" disabled={connectionStatus === 'connecting'} className="button-enhanced">
               <Circle className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">
                 {connectionStatus === 'connecting' ? 'Connecting...' : 'Connect'}
@@ -401,30 +394,30 @@ export const FullVoiceAssistant = ({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 bg-gradient-to-b from-background/50 to-background/20">
+      <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6 bg-gradient-to-b from-background/30 to-muted/20">
         {messages.length === 0 && (
-          <div className="text-center text-muted-foreground py-8 lg:py-12">
-            <div className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary/20 to-primary-glow/20 flex items-center justify-center">
-              <Brain className="w-8 h-8 lg:w-10 lg:h-10 text-primary" />
+          <div className="text-center text-muted-foreground py-12 lg:py-16">
+            <div className="w-20 h-20 lg:w-24 lg:h-24 mx-auto mb-6 rounded-3xl bg-gradient-primary flex items-center justify-center shadow-large animate-zen-breathe">
+              <Brain className="w-10 h-10 lg:w-12 lg:h-12 text-primary-foreground" />
             </div>
-            <h4 className="text-lg lg:text-xl font-medium mb-2">ZenVA Ready to Help</h4>
-            <p className="mb-6 text-sm lg:text-base max-w-md mx-auto">I remember our conversations and can reference your previous notes and insights</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm max-w-lg mx-auto">
-              <div className="p-3 lg:p-4 bg-gradient-to-br from-primary/5 to-primary-glow/5 rounded-xl border border-primary/10 shadow-sm">
+            <h4 className="text-xl lg:text-2xl font-semibold mb-3 text-gradient-primary">ZenVA Ready to Help</h4>
+            <p className="mb-8 text-base lg:text-lg max-w-lg mx-auto">I remember our conversations and can reference your previous notes and insights</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm max-w-2xl mx-auto">
+              <div className="p-4 lg:p-6 bg-gradient-to-br from-primary/10 to-primary-glow/5 rounded-2xl border border-primary/20 shadow-subtle hover:shadow-medium transition-all duration-300">
                 <p className="font-medium">💬 Natural Conversation</p>
-                <p className="text-xs lg:text-sm opacity-80 mt-1">Talk naturally, like you would to a human assistant</p>
+                <p className="text-sm opacity-80 mt-2">Talk naturally, like you would to a human assistant</p>
               </div>
-              <div className="p-3 lg:p-4 bg-gradient-to-br from-success/5 to-success/10 rounded-xl border border-success/10 shadow-sm">
+              <div className="p-4 lg:p-6 bg-gradient-to-br from-success/10 to-success/5 rounded-2xl border border-success/20 shadow-subtle hover:shadow-medium transition-all duration-300">
                 <p className="font-medium">🎯 Smart Actions</p>
-                <p className="text-xs lg:text-sm opacity-80 mt-1">"Create a task to review the proposal by Friday"</p>
+                <p className="text-sm opacity-80 mt-2">"Create a task to review the proposal by Friday"</p>
               </div>
-              <div className="p-3 lg:p-4 bg-gradient-to-br from-focus/5 to-focus/10 rounded-xl border border-focus/10 shadow-sm">
+              <div className="p-4 lg:p-6 bg-gradient-to-br from-focus/10 to-focus/5 rounded-2xl border border-focus/20 shadow-subtle hover:shadow-medium transition-all duration-300">
                 <p className="font-medium">⏱️ Focus Sessions</p>
-                <p className="text-xs lg:text-sm opacity-80 mt-1">"Start a 30-minute focus session"</p>
+                <p className="text-sm opacity-80 mt-2">"Start a 30-minute focus session"</p>
               </div>
-              <div className="p-3 lg:p-4 bg-gradient-to-br from-warning/5 to-warning/10 rounded-xl border border-warning/10 shadow-sm">
+              <div className="p-4 lg:p-6 bg-gradient-to-br from-warning/10 to-warning/5 rounded-2xl border border-warning/20 shadow-subtle hover:shadow-medium transition-all duration-300">
                 <p className="font-medium">📝 Voice Notes</p>
-                <p className="text-xs lg:text-sm opacity-80 mt-1">"Save a note about today's meeting insights"</p>
+                <p className="text-sm opacity-80 mt-2">"Save a note about today's meeting insights"</p>
               </div>
             </div>
           </div>
@@ -434,35 +427,35 @@ export const FullVoiceAssistant = ({
           <div
             key={message.id}
             className={cn(
-              "flex space-x-2 lg:space-x-3 animate-fade-in",
+              "flex space-x-3 lg:space-x-4 animate-slide-in-up",
               message.type === 'user' ? 'justify-end' : 'justify-start'
             )}
           >
             {message.type !== 'user' && (
-              <Avatar className="w-8 h-8 lg:w-10 lg:h-10 shadow-sm flex-shrink-0">
+              <Avatar className="w-10 h-10 lg:w-12 lg:h-12 avatar-enhanced flex-shrink-0">
                 <AvatarFallback>
-                  {message.type === 'system' ? '⚡' : <Bot className="w-4 h-4 lg:w-5 lg:h-5" />}
+                  {message.type === 'system' ? '⚡' : <Brain className="w-5 h-5 lg:w-6 lg:h-6 text-primary" />}
                 </AvatarFallback>
               </Avatar>
             )}
             
             <div
               className={cn(
-                "max-w-[85%] sm:max-w-[80%] rounded-xl p-3 lg:p-4 shadow-sm",
+                "max-w-[85%] sm:max-w-[80%] rounded-2xl p-4 lg:p-5 shadow-medium backdrop-blur-sm",
                 message.type === 'user'
-                  ? 'bg-gradient-to-br from-primary to-primary-glow text-primary-foreground ml-8 lg:ml-12'
+                  ? 'bg-gradient-primary text-primary-foreground ml-10 lg:ml-14 shadow-glow'
                   : message.type === 'system'
-                  ? 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border border-blue-200 dark:border-blue-700'
-                  : 'bg-gradient-to-br from-muted/50 to-muted/80 backdrop-blur-sm'
+                  ? 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/50 dark:to-blue-800/50 border border-blue-200/50 dark:border-blue-700/50'
+                  : 'bg-gradient-to-br from-card to-muted/30 border border-border/30'
               )}
             >
-              <p className="text-sm lg:text-base whitespace-pre-wrap leading-relaxed">{message.content}</p>
-              <div className="flex items-center justify-between mt-2 lg:mt-3">
-                <p className="text-xs lg:text-sm opacity-70">
+              <p className="text-sm lg:text-base whitespace-pre-wrap leading-relaxed font-medium">{message.content}</p>
+              <div className="flex items-center justify-between mt-3 lg:mt-4">
+                <p className="text-xs lg:text-sm opacity-60 font-medium">
                   {message.timestamp.toLocaleTimeString()}
                 </p>
                 {message.isAudio && (
-                  <Badge variant="outline" className="text-xs shadow-sm">
+                  <Badge variant="outline" className="text-xs badge-enhanced">
                     {message.type === 'user' ? '🎤' : '🔊'} Audio
                   </Badge>
                 )}
@@ -470,7 +463,7 @@ export const FullVoiceAssistant = ({
             </div>
 
             {message.type === 'user' && (
-              <Avatar className="w-8 h-8 lg:w-10 lg:h-10 shadow-sm flex-shrink-0">
+              <Avatar className="w-10 h-10 lg:w-12 lg:h-12 avatar-enhanced flex-shrink-0">
                 <AvatarFallback>
                   <User className="w-4 h-4 lg:w-5 lg:h-5" />
                 </AvatarFallback>
@@ -481,10 +474,10 @@ export const FullVoiceAssistant = ({
 
         {currentTranscript && (
           <div className="flex justify-end space-x-3">
-            <div className="max-w-[85%] sm:max-w-[80%] rounded-xl p-3 lg:p-4 bg-primary/20 ml-8 lg:ml-12 animate-pulse">
+            <div className="max-w-[85%] sm:max-w-[80%] rounded-2xl p-4 lg:p-5 bg-primary/20 backdrop-blur-sm ml-10 lg:ml-14 animate-pulse border border-primary/30">
               <p className="text-sm lg:text-base italic">{currentTranscript}</p>
             </div>
-            <Avatar className="w-8 h-8 lg:w-10 lg:h-10 shadow-sm">
+            <Avatar className="w-10 h-10 lg:w-12 lg:h-12 avatar-enhanced">
               <AvatarFallback>
                 <User className="w-4 h-4 lg:w-5 lg:h-5" />
               </AvatarFallback>
@@ -496,51 +489,50 @@ export const FullVoiceAssistant = ({
       </div>
 
       {/* Controls */}
-      <div className="p-4 lg:p-6 border-t border-border/50 space-y-4 bg-gradient-to-r from-card/50 to-card/80 backdrop-blur-sm">
+      <div className="p-6 lg:p-8 border-t border-border/30 space-y-6 glass-card">
         {/* Voice Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+        <div className="flex flex-col sm:flex-row items-center justify-center space-y-6 sm:space-y-0 sm:space-x-8">
           <Button
             onClick={toggleRecording}
             disabled={!isConnected}
             className={cn(
-              "w-16 h-16 lg:w-20 lg:h-20 rounded-full shadow-lg transition-all duration-300",
+              "w-20 h-20 lg:w-24 lg:h-24 rounded-full shadow-xl transition-all duration-300 hover:shadow-glow",
               isRecording
-                ? "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 animate-pulse shadow-red-500/30"
-                : "bg-gradient-to-br from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 shadow-primary/30"
+                ? "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 animate-pulse shadow-red-500/50"
+                : "bg-gradient-primary hover:shadow-glow hover:-translate-y-1"
             )}
           >
             {isRecording ? (
-              <MicOff className="w-6 h-6 lg:w-8 lg:h-8" />
+              <MicOff className="w-7 h-7 lg:w-9 lg:h-9" />
             ) : (
-              <Mic className="w-6 h-6 lg:w-8 lg:h-8" />
+              <Mic className="w-7 h-7 lg:w-9 lg:h-9" />
             )}
           </Button>
           
           <div className="text-center sm:text-left">
-            <p className="text-sm lg:text-base font-medium">
+            <p className="text-base lg:text-lg font-semibold">
               {isRecording ? 'Tap to stop' : 'Hold or tap to talk'}
             </p>
-            <p className="text-xs lg:text-sm text-muted-foreground mt-1">
+            <p className="text-sm lg:text-base text-muted-foreground mt-2">
               {isSpeaking && '🔊 Assistant speaking...'}
             </p>
           </div>
         </div>
 
         {/* Text Input */}
-        <div className="flex space-x-2 lg:space-x-3">
+        <div className="flex space-x-3 lg:space-x-4">
           <Input
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
             placeholder="Type a message or use voice..."
             disabled={!isConnected}
             onKeyPress={(e) => e.key === 'Enter' && sendTextMessage()}
-            className="flex-1 rounded-xl border-border/50 bg-background/50 backdrop-blur-sm"
+            className="flex-1 input-enhanced"
           />
           <Button 
             onClick={sendTextMessage} 
             disabled={!textInput.trim() || !isConnected}
-            size="icon"
-            className="rounded-xl shadow-sm"
+            className="px-6 button-enhanced"
           >
             <Send className="w-4 h-4" />
           </Button>
