@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 interface MoodEntry {
-  mood: string;
+  mood: number;
   energy: number;
   timestamp: Date;
   emoji: string;
@@ -46,7 +46,7 @@ export const MoodTracker = () => {
           mood: data.mood,
           energy: data.energy_level,
           timestamp: new Date(data.created_at),
-          emoji: moods.find(m => m.id === data.mood)?.emoji || '😐',
+          emoji: moods[data.mood - 1]?.emoji || '😐',
         });
         setEnergy([data.energy_level]);
       }
@@ -56,12 +56,12 @@ export const MoodTracker = () => {
   };
 
   const moods = [
-    { id: 'amazing', label: 'Amazing', emoji: '🚀', color: 'text-success' },
-    { id: 'great', label: 'Great', emoji: '😊', color: 'text-primary' },
-    { id: 'good', label: 'Good', emoji: '🙂', color: 'text-focus' },
-    { id: 'okay', label: 'Okay', emoji: '😐', color: 'text-warning' },
-    { id: 'low', label: 'Low', emoji: '😔', color: 'text-muted-foreground' },
-    { id: 'stressed', label: 'Stressed', emoji: '😰', color: 'text-destructive' },
+    { id: 1, label: 'Stressed', emoji: '😰', color: 'text-destructive' },
+    { id: 2, label: 'Low', emoji: '😔', color: 'text-muted-foreground' },
+    { id: 3, label: 'Okay', emoji: '😐', color: 'text-warning' },
+    { id: 4, label: 'Good', emoji: '🙂', color: 'text-focus' },
+    { id: 5, label: 'Great', emoji: '😊', color: 'text-primary' },
+    { id: 6, label: 'Amazing', emoji: '🚀', color: 'text-success' },
   ];
 
   const updateMood = async (mood: typeof moods[0]) => {
@@ -72,7 +72,7 @@ export const MoodTracker = () => {
         .from('mood_entries')
         .insert({
           user_id: user.id,
-          mood: mood.id as any, // Type matches the mood_type enum
+          mood: mood.id,
           energy_level: energy[0],
         });
 

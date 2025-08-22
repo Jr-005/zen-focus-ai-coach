@@ -75,8 +75,8 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
         type: msg.message_type as 'user' | 'assistant',
         content: msg.content,
         timestamp: new Date(msg.created_at),
-        intent: msg.intent,
-        action: msg.action_data
+        intent: undefined, // intent field doesn't exist in ai_conversations table
+        action: undefined // action_data field doesn't exist in ai_conversations table
       }));
 
       setMessages(formattedMessages);
@@ -95,8 +95,7 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
           user_id: user.id,
           message_type: message.type,
           content: message.content,
-          intent: message.intent,
-          action_data: message.action
+          category: message.intent || 'general'
         })
         .select()
         .single();
@@ -238,8 +237,7 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
                 title: parsedTask.title,
                 description: parsedTask.description,
                 priority: parsedTask.priority,
-                due_date: parsedTask.dueDate ? new Date(parsedTask.dueDate).toISOString() : null,
-                goal_id: parsedTask.goalId
+                due_date: parsedTask.dueDate ? new Date(parsedTask.dueDate).toISOString() : null
               })
               .select()
               .single();

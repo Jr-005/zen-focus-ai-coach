@@ -20,10 +20,18 @@ export const useRAG = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const saveVoiceNote = async (content: string, summary?: string): Promise<string | null> => {
+  const saveVoiceNote = async (content: string, summary?: string, userId?: string): Promise<string | null> => {
     try {
       setLoading(true);
       console.log('Saving voice note:', content.substring(0, 100));
+
+      // Get user ID from auth if not provided
+      const { data: { user } } = await supabase.auth.getUser();
+      const finalUserId = userId || user?.id;
+      
+      if (!finalUserId) {
+        throw new Error('User not authenticated');
+      }
 
       // Generate embedding for the content
       const { data: embeddingData, error: embeddingError } = await supabase.functions.invoke(
@@ -41,14 +49,13 @@ export const useRAG = () => {
       const { embedding } = embeddingData;
       console.log('Generated embedding for note, length:', embedding.length);
 
-      // Save note with embedding to database
+      // Save note to database (embedding field doesn't exist in voice_notes table)
       const { data, error } = await supabase
         .from('voice_notes')
         .insert({
+          user_id: finalUserId,
           content,
-          summary,
-          embedding,
-          source: 'voice_input'
+          summary
         })
         .select('id')
         .single();

@@ -76,7 +76,7 @@ export const TodoManager = () => {
         completed: task.completed,
         priority: task.priority as 'low' | 'medium' | 'high',
         dueDate: task.due_date,
-        goalId: task.goal_id || null,
+        goalId: undefined, // goal_id field doesn't exist in tasks table
         createdAt: new Date(task.created_at),
       }));
       
@@ -124,7 +124,7 @@ export const TodoManager = () => {
               completed: payload.new.completed,
               priority: payload.new.priority as 'low' | 'medium' | 'high',
               dueDate: payload.new.due_date,
-              goalId: payload.new.goal_id,
+              goalId: undefined,
               createdAt: new Date(payload.new.created_at),
             };
             setTasks(prev => [newTask, ...prev]);
@@ -169,7 +169,6 @@ export const TodoManager = () => {
           description: newTask.description || null,
           priority: newTask.priority,
           due_date: newTask.dueDate || null,
-          goal_id: newTask.goalId || null,
         });
 
       if (error) throw error;
@@ -262,7 +261,6 @@ export const TodoManager = () => {
           description: parsedTask.description || null,
           priority: parsedTask.priority,
           due_date: parsedTask.dueDate || null,
-          goal_id: parsedTask.goalId || null,
         });
 
       if (error) throw error;
@@ -385,7 +383,7 @@ export const TodoManager = () => {
               onApplySuggestion={handleAISuggestions}
             />
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select value={newTask.priority} onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Priority" />
@@ -401,24 +399,6 @@ export const TodoManager = () => {
                 value={newTask.dueDate}
                 onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
               />
-              <Select value={newTask.goalId} onValueChange={(value) => setNewTask({ ...newTask, goalId: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Link to Goal" />
-                </SelectTrigger>
-                <SelectContent>
-                  {goals.map((goal) => (
-                    <SelectItem key={goal.id} value={goal.id}>
-                      <div className="flex items-center">
-                        <div 
-                          className="w-3 h-3 rounded-full mr-2" 
-                          style={{ backgroundColor: goal.color }}
-                        />
-                        {goal.title}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
             <div className="flex space-x-2">
               <Button onClick={addTask} className="flex-1">
@@ -472,15 +452,9 @@ export const TodoManager = () => {
                   {task.description && (
                     <p className="text-sm text-muted-foreground">{task.description}</p>
                   )}
-                  
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                    {goal && (
-                      <div className="flex items-center">
-                        <Target className="w-3 h-3 mr-1" />
-                        <span style={{ color: goal.color }}>{goal.title}</span>
-                      </div>
-                    )}
-                    {task.dueDate && (
+                   
+                   <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                     {task.dueDate && (
                       <div className="flex items-center">
                         <Calendar className="w-3 h-3 mr-1" />
                         {new Date(task.dueDate).toLocaleDateString()}
