@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit3, Trash2, Flag, Calendar, Target } from 'lucide-react';
+import { Plus, Edit3, Trash2, Flag, Calendar, Target, Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -302,44 +302,54 @@ export const TodoManager = () => {
   return (
     <div className="space-y-6">
       {/* Header with Progress */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground">Your Tasks</h2>
-          <p className="text-muted-foreground">
-            {completedTasks} of {totalTasks} tasks completed
-          </p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="text-right">
-            <div className="text-2xl font-bold text-primary">
-              {totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%
+      <Card className="card-glass">
+        <CardContent className="p-6">
+          <div className="flex-between mb-6">
+            <div>
+              <h2 className="text-headline text-gradient-primary mb-2">Your Tasks</h2>
+              <p className="text-subtitle text-muted-foreground">
+                {completedTasks} of {totalTasks} tasks completed
+              </p>
             </div>
-            <div className="text-sm text-muted-foreground">Progress</div>
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-1">
+                  {totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%
+                </div>
+                <div className="text-xs text-muted-foreground">Progress</div>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowVoiceInput(!showVoiceInput)}
+                  className="button-enhanced"
+                >
+                  <Mic className="w-4 h-4 mr-2" />
+                  Voice
+                </Button>
+                <Button onClick={() => setShowAddForm(!showAddForm)} className="button-enhanced">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Task
+                </Button>
+              </div>
+            </div>
           </div>
-          <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowVoiceInput(!showVoiceInput)}
-              className="animate-float"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Voice
-            </Button>
-            <Button onClick={() => setShowAddForm(!showAddForm)} className="animate-float">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Task
-            </Button>
-          </div>
-        </div>
-      </div>
 
-      {/* Progress Bar */}
-      <div className="w-full bg-muted rounded-full h-2">
-        <div 
-          className="bg-gradient-to-r from-primary to-primary-glow h-2 rounded-full transition-all duration-500"
-          style={{ width: `${totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0}%` }}
-        />
-      </div>
+          {/* Enhanced Progress Bar */}
+          <div className="space-tight">
+            <div className="flex-between text-sm">
+              <span className="font-medium">Daily Progress</span>
+              <span className="text-muted-foreground">{completedTasks}/{totalTasks}</span>
+            </div>
+            <div className="progress-enhanced">
+              <div 
+                className="progress-bar"
+                style={{ width: `${totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Natural Language Task Input */}
       <NaturalLanguageTaskInput
@@ -359,19 +369,26 @@ export const TodoManager = () => {
 
       {/* Add Task Form */}
       {showAddForm && (
-        <Card className="p-4 border-2 border-primary/20 animate-slide-in-up">
-          <div className="space-y-4">
+        <Card className="card-glass border-primary/20 animate-slide-in-up">
+          <CardContent className="p-6 space-content">
+            <div className="flex-between mb-4">
+              <h3 className="text-title">Create New Task</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
+                ✕
+              </Button>
+            </div>
+            
             <Input
               placeholder="What would you like to accomplish?"
               value={newTask.title}
               onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-              className="text-lg"
+              className="input-enhanced text-lg"
             />
             <Textarea
               placeholder="Add a description (optional)"
               value={newTask.description}
               onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-              className="min-h-[80px]"
+              className="min-h-[100px] rounded-xl border-border/50 bg-background/50"
             />
             
             {/* AI Suggestions */}
@@ -385,7 +402,7 @@ export const TodoManager = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select value={newTask.priority} onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-xl border-border/50 bg-background/50">
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent>
@@ -398,87 +415,28 @@ export const TodoManager = () => {
                 type="date"
                 value={newTask.dueDate}
                 onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                className="input-enhanced"
               />
             </div>
-            <div className="flex space-x-2">
-              <Button onClick={addTask} className="flex-1">
-                Add Task
+            <div className="flex gap-3">
+              <Button onClick={addTask} className="flex-1 button-enhanced">
+                Create Task
               </Button>
-              <Button variant="outline" onClick={() => setShowAddForm(false)}>
+              <Button variant="outline" onClick={() => setShowAddForm(false)} className="button-enhanced">
                 Cancel
               </Button>
             </div>
-          </div>
+          </CardContent>
         </Card>
       )}
 
       {/* Tasks List */}
-      <div className="space-y-3">
-        {tasks.map((task) => {
+      <div className="space-y-4">
+        {tasks.map((task, index) => {
           const goal = getGoal(task.goalId);
           return (
             <Card
               key={task.id}
               className={cn(
-                "p-4 transition-all duration-300 hover:shadow-md",
-                task.completed && "opacity-60 bg-muted/30"
-              )}
-            >
-              <div className="flex items-start space-x-3">
-                <Checkbox
-                  checked={task.completed}
-                  onCheckedChange={() => toggleTask(task.id)}
-                  className="mt-1"
-                />
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-start justify-between">
-                    <h3 className={cn(
-                      "font-medium",
-                      task.completed && "line-through text-muted-foreground"
-                    )}>
-                      {task.title}
-                    </h3>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={getPriorityColor(task.priority)}>
-                        <Flag className="w-3 h-3 mr-1" />
-                        {task.priority}
-                      </Badge>
-                      <Button variant="ghost" size="sm" onClick={() => deleteTask(task.id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {task.description && (
-                    <p className="text-sm text-muted-foreground">{task.description}</p>
-                  )}
-                   
-                   <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                     {task.dueDate && (
-                      <div className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        {new Date(task.dueDate).toLocaleDateString()}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-        
-        {tasks.length === 0 && (
-          <Card className="p-8 text-center">
-            <div className="space-y-2">
-              <Plus className="w-12 h-12 mx-auto text-muted-foreground/50" />
-              <h3 className="text-lg font-medium text-muted-foreground">No tasks yet</h3>
-              <p className="text-sm text-muted-foreground">
-                Add your first task to start your productive journey
-              </p>
-            </div>
-          </Card>
-        )}
-      </div>
-    </div>
-  );
-};
+                "card-interactive animate-fade-in",
+                task.complete
