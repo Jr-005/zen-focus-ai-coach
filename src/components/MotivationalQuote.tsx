@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Lightbulb, Heart, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';

@@ -226,10 +226,10 @@ export const TodoManager = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-destructive text-destructive-foreground';
-      case 'medium': return 'bg-warning text-warning-foreground';
-      case 'low': return 'bg-muted text-muted-foreground';
-      default: return 'bg-muted text-muted-foreground';
+      case 'high': return 'text-destructive border-destructive';
+      case 'medium': return 'text-warning border-warning';
+      case 'low': return 'text-muted-foreground border-muted';
+      default: return 'text-muted-foreground border-muted';
     }
   };
 
@@ -439,13 +439,13 @@ export const TodoManager = () => {
               key={task.id}
               className={cn(
                 "card-interactive animate-fade-in",
-                task.complete ? "opacity-60" : ""
+                task.completed ? "opacity-60" : ""
               )}
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Checkbox
-                    checked={task.complete}
+                    checked={task.completed}
                     onChange={() => toggleTask(task.id)}
                     className="mt-1"
                   />
@@ -453,11 +453,11 @@ export const TodoManager = () => {
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className={cn(
                         "font-medium",
-                        task.complete && "line-through text-muted-foreground"
+                        task.completed && "line-through text-muted-foreground"
                       )}>
                         {task.title}
                       </h3>
-                      <Badge variant={getPriorityColor(task.priority)} className="text-xs">
+                      <Badge variant="outline" className={cn("text-xs", getPriorityColor(task.priority))}>
                         {task.priority}
                       </Badge>
                       {goal && (
@@ -480,10 +480,10 @@ export const TodoManager = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => removeTask(task.id)}
+                    onClick={() => deleteTask(task.id)}
                     className="text-destructive hover:text-destructive"
                   >
-                    <Trash className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </CardContent>
@@ -493,3 +493,4 @@ export const TodoManager = () => {
       </div>
     </div>
   );
+};
