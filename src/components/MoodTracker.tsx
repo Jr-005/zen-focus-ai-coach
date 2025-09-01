@@ -37,9 +37,9 @@ export const MoodTracker = () => {
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows returned"
+      if (error) throw error;
       
       if (data) {
         setCurrentMood({
@@ -49,6 +49,9 @@ export const MoodTracker = () => {
           emoji: moods[data.mood - 1]?.emoji || '😐',
         });
         setEnergy([data.energy_level]);
+      } else {
+        // No mood entries found - this is fine for new users
+        setCurrentMood(null);
       }
     } catch (error) {
       console.error('Error fetching mood:', error);
