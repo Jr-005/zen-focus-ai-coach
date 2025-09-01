@@ -439,4 +439,57 @@ export const TodoManager = () => {
               key={task.id}
               className={cn(
                 "card-interactive animate-fade-in",
-                task.complete
+                task.complete ? "opacity-60" : ""
+              )}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    checked={task.complete}
+                    onChange={() => toggleTask(task.id)}
+                    className="mt-1"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className={cn(
+                        "font-medium",
+                        task.complete && "line-through text-muted-foreground"
+                      )}>
+                        {task.title}
+                      </h3>
+                      <Badge variant={getPriorityColor(task.priority)} className="text-xs">
+                        {task.priority}
+                      </Badge>
+                      {goal && (
+                        <Badge variant="outline" className="text-xs">
+                          {goal.title}
+                        </Badge>
+                      )}
+                    </div>
+                    {task.description && (
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {task.description}
+                      </p>
+                    )}
+                    {task.dueDate && (
+                      <p className="text-xs text-muted-foreground">
+                        Due: {new Date(task.dueDate).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeTask(task.id)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
