@@ -35,21 +35,22 @@ export const VoiceTestComponent = () => {
 
       if (error) {
         console.error('Transcription error:', error);
-        toast.error('Failed to transcribe audio');
+        toast.error(`Failed to transcribe audio: ${error.message || 'Unknown error'}`);
         return;
       }
 
       if (!data.success) {
         console.error('Transcription failed:', data.error);
-        toast.error('Transcription failed: ' + data.error);
+        toast.error(`Transcription failed: ${data.error || 'Unknown error'}`);
         return;
       }
 
       setTranscription(data.transcription);
       toast.success('Audio transcribed successfully');
     } catch (error) {
-      console.error('Error during transcription:', error);
-      toast.error('Failed to transcribe audio');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Error during transcription:', errorMessage);
+      toast.error(`Failed to transcribe audio: ${errorMessage}`);
     } finally {
       setIsTranscribing(false);
     }
@@ -75,18 +76,19 @@ export const VoiceTestComponent = () => {
 
       if (error) {
         console.error('Chat error:', error);
-        toast.error('Chat test failed');
+        toast.error(`Chat test failed: ${error.message || 'Unknown error'}`);
         return;
       }
 
       if (data.success) {
         toast.success('Chat test successful: ' + data.response);
       } else {
-        toast.error('Chat test failed: ' + data.error);
+        toast.error(`Chat test failed: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error during chat test:', error);
-      toast.error('Chat test failed');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Error during chat test:', errorMessage);
+      toast.error(`Chat test failed: ${errorMessage}`);
     }
   };
 
