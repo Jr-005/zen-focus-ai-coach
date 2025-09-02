@@ -36,7 +36,7 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
   const [isSpeaking, setIsSpeaking] = useState(false);
   
   const { user } = useAuth();
-  const { parseTaskFromNaturalLanguage, textToSpeech, loading: aiLoading } = useAI();
+  const { parseTaskFromNaturalLanguage, textToSpeech, transcribeAudio, loading: aiLoading } = useAI();
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -164,7 +164,7 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
     setIsProcessing(true);
     
     try {
-      // Transcribe audio using AssemblyAI
+      // Transcribe audio using Groq Whisper
       const transcription = await transcribeAudio(audioBlob);
       
       if (!transcription) {
@@ -196,28 +196,6 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
     }
   };
 
-  const transcribeAudio = async (audioBlob: Blob): Promise<string | null> => {
-    try {
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-      const { data, error } = await supabase.functions.invoke('voice-transcription', {
-        body: {
-          audioData: base64Audio,
-          language: 'en'
-        }
-      });
-
-      if (error || !data.success) {
-        throw new Error(data?.error || 'Transcription failed');
-      }
-
-      return data.transcription;
-    } catch (error) {
-      console.error('Transcription error:', error);
-      return null;
-    }
-  };
 
   const processUserIntent = async (text: string) => {
     try {
