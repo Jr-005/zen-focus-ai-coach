@@ -17,7 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, model = "llama3-groq-70b-8192-tool-use-preview", temperature = 0.7 } = await req.json();
+    const { messages, model = "llama-3.1-70b-versatile", temperature = 0.7 } = await req.json();
 
     const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
     if (!GROQ_API_KEY) {
