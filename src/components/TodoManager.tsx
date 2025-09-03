@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit3, Trash2, Flag, Calendar, Target, Mic } from 'lucide-react';
+import { Plus, Edit3, Trash2, Flag, Calendar, Target, Mic, CheckSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -233,7 +233,6 @@ export const TodoManager = () => {
 
   const handleVoiceTranscription = (text: string) => {
     setNewTask({ ...newTask, title: text });
-    setShowVoiceInput(false);
     setShowAddForm(true);
   };
 
@@ -244,7 +243,6 @@ export const TodoManager = () => {
       description: suggestion.improvedDescription || newTask.description,
       priority: suggestion.priority,
     });
-    setShowAISuggestions(false);
   };
 
   const handleNaturalLanguageTask = async (parsedTask: ParsedTask) => {

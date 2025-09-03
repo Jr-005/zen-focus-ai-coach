@@ -10,7 +10,7 @@ import {
   Activity, Wand2, TrendingUp, Clock
 } from 'lucide-react';
 import { TodoManager } from '@/components/TodoManager';
-import { FocusTimer } from '@/components/FocusTimer';
+import FocusTimer from '@/components/FocusTimer';
 import { GoalTracker } from '@/components/GoalTracker';
 import { MoodTracker } from '@/components/MoodTracker';
 import { MotivationalQuote } from '@/components/MotivationalQuote';
