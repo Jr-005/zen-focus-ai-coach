@@ -153,37 +153,29 @@ export const MotivationalQuote = () => {
   }
 
   return (
-    <Card className="card-glass relative overflow-hidden animate-fade-in shadow-xl">
-      <CardContent className={cn(
-        "p-6 lg:p-8 relative bg-gradient-to-br",
-        getCategoryColor(currentQuote.category)
-      )}>
-        {/* Background decoration */}
-        <div className="absolute top-4 right-4 w-16 h-16 lg:w-20 lg:h-20 opacity-10 animate-float">
-          {getCategoryIcon(currentQuote.category)}
-        </div>
-        
-        <div className="relative space-y-4 lg:space-y-6">
+    <Card className="card-base">
+      <CardContent className="p-6">
+        <div className="space-y-4">
           {/* Greeting */}
-          <div className="flex items-center gap-2 text-sm lg:text-base text-muted-foreground font-medium">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Sparkles className="w-4 h-4" />
             {getGreeting()}
           </div>
 
           {/* Quote */}
           <div className="space-y-4">
-            <blockquote className="text-lg lg:text-xl xl:text-2xl font-semibold text-foreground leading-relaxed">
+            <blockquote className="text-lg font-semibold text-foreground leading-relaxed">
               "{currentQuote.text}"
             </blockquote>
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <cite className="text-base lg:text-lg text-muted-foreground not-italic font-medium">
+            <div className="flex items-center justify-between gap-3">
+              <cite className="text-sm text-muted-foreground not-italic">
                 — {currentQuote.author}
               </cite>
               
               <div className="flex items-center gap-2">
                 {getCategoryIcon(currentQuote.category)}
-                <Badge variant="secondary" className="badge-enhanced capitalize">
+                <Badge variant="secondary" className="capitalize text-xs">
                   {currentQuote.category}
                 </Badge>
               </div>
@@ -191,13 +183,12 @@ export const MotivationalQuote = () => {
           </div>
 
           {/* Refresh Button */}
-          <div className="flex justify-center pt-2">
+          <div className="flex justify-center">
             <Button
               variant="ghost"
               size="sm"
               onClick={generateContextualQuote}
               disabled={isGenerating}
-              className="button-enhanced hover:bg-background/50"
             >
               <RefreshCw className={cn("w-4 h-4 mr-2", isGenerating && "animate-spin")} />
               {isGenerating ? "Generating..." : "New Quote"}

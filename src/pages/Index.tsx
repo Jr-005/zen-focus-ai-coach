@@ -4,11 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import { 
-  Mic, Brain, Timer, Target, Heart, MessageSquare, Lightbulb, CheckSquare, 
-  Settings, User, Sparkles, TrendingUp, Clock, Activity, Wand2, Menu,
-  Bell, Search, Plus, Zap, Star, BarChart3
+  Mic, Brain, Timer, Target, Heart, CheckSquare, 
+  Settings, Bell, Search, Plus, Zap, Star, BarChart3,
+  Activity, Wand2, TrendingUp, Clock
 } from 'lucide-react';
 import { TodoManager } from '@/components/TodoManager';
 import { FocusTimer } from '@/components/FocusTimer';
@@ -16,9 +15,7 @@ import { GoalTracker } from '@/components/GoalTracker';
 import { MoodTracker } from '@/components/MoodTracker';
 import { MotivationalQuote } from '@/components/MotivationalQuote';
 import { VoiceAgent } from '@/components/VoiceAgent';
-
 import NotesManager from '@/components/NotesManager';
-import { AITaskSuggestions } from '@/components/AITaskSuggestions';
 import { CreativeMode } from '@/components/CreativeMode';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -40,117 +37,63 @@ const Index = () => {
       label: 'Voice Command', 
       description: 'Talk to your AI assistant',
       action: () => setActiveTab('assistant'),
-      gradient: 'from-primary to-primary-glow'
+      color: 'bg-primary'
     },
     { 
       icon: Plus, 
       label: 'Quick Task', 
       description: 'Add a new task',
       action: () => setActiveTab('tasks'),
-      gradient: 'from-success to-success/80'
+      color: 'bg-success'
     },
     { 
       icon: Timer, 
       label: 'Focus Session', 
       description: 'Start a Pomodoro timer',
       action: () => setActiveTab('focus'),
-      gradient: 'from-focus to-focus-glow'
+      color: 'bg-focus'
     },
     { 
       icon: Heart, 
       label: 'Mood Check', 
       description: 'Log your current mood',
-      action: () => {},
-      gradient: 'from-warning to-warning/80'
+      action: () => setActiveTab('wellness'),
+      color: 'bg-warning'
     },
-  ];
-
-  const features = [
-    {
-      icon: <Brain className="h-6 w-6" />,
-      title: "AI Voice Assistant",
-      description: "Natural conversation with memory and context awareness",
-      badge: "AI Powered",
-      color: "primary"
-    },
-    {
-      icon: <Sparkles className="h-6 w-6" />,
-      title: "Smart Memory",
-      description: "Your AI remembers conversations and learns from your notes",
-      badge: "RAG System",
-      color: "focus"
-    },
-    {
-      icon: <CheckSquare className="h-6 w-6" />,
-      title: "Task Management",
-      description: "AI-suggested tasks with natural language input",
-      badge: "Intelligent",
-      color: "success"
-    },
-    {
-      icon: <Timer className="h-6 w-6" />,
-      title: "Focus Timer",
-      description: "Pomodoro technique with productivity tracking",
-      badge: "Productivity",
-      color: "warning"
-    }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      {/* Enhanced App Header */}
-      <header className="sticky top-0 z-50 w-full glass-strong border-b border-border/30">
-        <div className="container-app py-4">
-          <div className="flex-between">
+    <div className="min-h-screen bg-background">
+      {/* Clean Header */}
+      <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="app-container">
+          <div className="flex-between py-4">
             {/* Logo & Brand */}
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-primary shadow-medium animate-zen-breathe">
-                <Brain className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <div className="space-tight">
-                <h1 className="text-title text-gradient-primary">ZenVA</h1>
-                <p className="text-micro">AI Productivity Suite</p>
-              </div>
-            </div>
-
-            {/* Quick Stats Dashboard */}
-            <div className="hidden lg:flex items-center gap-8">
-              {stats.slice(0, 2).map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <div key={index} className="flex items-center gap-3 group">
-                    <div className={cn("p-2 rounded-xl bg-muted/50 group-hover:bg-muted transition-colors", stat.color)}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">{stat.value}</p>
-                      <p className="text-xs text-muted-foreground">{stat.label}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* User Actions */}
             <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm">
+                <Brain className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gradient-primary">ZenVA</h1>
+                <p className="text-xs text-muted-foreground">AI Productivity Suite</p>
+              </div>
+            </div>
+
+            {/* Header Actions */}
+            <div className="flex items-center gap-2">
               <MoodTracker />
-              <Button variant="ghost" size="icon" className="hover-lift focus-ring">
+              <Button variant="ghost" size="icon" className="h-9 w-9">
                 <Bell className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" className="hover-lift focus-ring">
+              <Button variant="ghost" size="icon" className="h-9 w-9">
                 <Search className="h-4 w-4" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="hover-lift focus-ring"
-                onClick={signOut}
-              >
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={signOut}>
                 <Settings className="h-4 w-4" />
               </Button>
-              <Avatar className="h-10 w-10 avatar-enhanced">
+              <Avatar className="h-8 w-8">
                 <AvatarImage src="" />
-                <AvatarFallback className="bg-gradient-primary text-primary-foreground font-semibold">
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
                   {user?.email?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -159,301 +102,239 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="container-app py-8 space-loose">
-        {/* Enhanced Hero Section */}
-        <div className="text-center mb-16 space-content">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 animate-fade-in">
-            <Star className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Your Intelligent Productivity Companion</span>
-          </div>
-          <h2 className="text-display text-gradient-primary mb-6 animate-slide-in-up">
-            Boost Your Focus,<br />Achieve Your Goals
-          </h2>
-          <p className="text-subtitle text-muted-foreground max-w-3xl mx-auto animate-slide-in-up" style={{ animationDelay: '0.1s' }}>
-            Experience the future of productivity with AI-powered voice assistance, intelligent task management, and personalized insights that adapt to your workflow.
-          </p>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-12">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={index} className="card-interactive animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <CardContent className="p-6">
-                  <div className="flex-between mb-4">
-                    <div className={cn("p-3 rounded-xl bg-muted/50", stat.color)}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <Badge variant="secondary" className="badge-enhanced text-success">
-                      {stat.trend}
-                    </Badge>
-                  </div>
-                  <div className="space-tight">
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-caption">{stat.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Quick Actions */}
-        <Card className="card-glass mb-12 animate-slide-in-up">
-          <CardHeader className="text-center pb-6">
-            <CardTitle className="flex items-center justify-center gap-2">
-              <Zap className="h-5 w-5 text-primary" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription>
-              Jump into your most common productivity tasks
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {quickActions.map((action, index) => {
-                const Icon = action.icon;
-                return (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className={cn(
-                      "h-auto p-6 flex flex-col items-center gap-3 group",
-                      "hover:border-primary/30 hover:bg-gradient-to-br hover:shadow-medium",
-                      "transition-all duration-300 click-scale"
-                    )}
-                    onClick={action.action}
-                  >
-                    <div className={cn(
-                      "p-4 rounded-2xl bg-gradient-to-br shadow-subtle group-hover:shadow-medium transition-all duration-300",
-                      action.gradient
-                    )}>
-                      <Icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="text-center space-tight">
-                      <p className="font-semibold text-sm">{action.label}</p>
-                      <p className="text-xs text-muted-foreground">{action.description}</p>
-                    </div>
-                  </Button>
-                );
-              })}
+      <main className="app-container py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <div className="flex-between mb-6">
+            <div>
+              <h2 className="text-headline mb-2">
+                Welcome back, {user?.email?.split('@')[0] || 'User'}
+              </h2>
+              <p className="text-muted-foreground">
+                Here's your productivity overview for today
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-success rounded-full"></div>
+              <span className="text-sm text-success font-medium">All systems active</span>
+            </div>
+          </div>
 
-        {/* Enhanced Main Content */}
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {stats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <Card key={index} className="card-interactive">
+                  <CardContent className="p-4">
+                    <div className="flex-between mb-3">
+                      <div className={cn("p-2 rounded-lg bg-muted", stat.color)}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        {stat.trend}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold mb-1">{stat.value}</p>
+                      <p className="text-caption">{stat.label}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Quick Actions */}
+          <Card className="card-base">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg">Quick Actions</CardTitle>
+              <CardDescription>Jump into your most common tasks</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {quickActions.map((action, index) => {
+                  const Icon = action.icon;
+                  return (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      className="h-auto p-4 flex flex-col items-center gap-2 hover:border-primary/30"
+                      onClick={action.action}
+                    >
+                      <div className={cn("p-3 rounded-xl text-white", action.color)}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-medium text-sm">{action.label}</p>
+                        <p className="text-xs text-muted-foreground">{action.description}</p>
+                      </div>
+                    </Button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 mb-8 h-16 bg-glass-card border border-border/30 rounded-2xl p-2 shadow-medium">
-            <TabsTrigger 
-              value="dashboard" 
-              className="tab-trigger-enhanced flex-col gap-1 h-12"
-            >
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 mb-8 h-12 bg-muted/50 rounded-xl p-1">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2 text-sm">
               <BarChart3 className="h-4 w-4" />
-              <span className="text-xs font-medium">Dashboard</span>
+              <span className="hidden sm:inline">Dashboard</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="assistant" 
-              className="tab-trigger-enhanced flex-col gap-1 h-12"
-            >
+            <TabsTrigger value="assistant" className="flex items-center gap-2 text-sm">
               <Mic className="h-4 w-4" />
-              <span className="text-xs font-medium">Assistant</span>
+              <span className="hidden sm:inline">Assistant</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="tasks" 
-              className="tab-trigger-enhanced flex-col gap-1 h-12"
-            >
+            <TabsTrigger value="tasks" className="flex items-center gap-2 text-sm">
               <CheckSquare className="h-4 w-4" />
-              <span className="text-xs font-medium">Tasks</span>
+              <span className="hidden sm:inline">Tasks</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="focus" 
-              className="tab-trigger-enhanced flex-col gap-1 h-12"
-            >
+            <TabsTrigger value="focus" className="flex items-center gap-2 text-sm">
               <Timer className="h-4 w-4" />
-              <span className="text-xs font-medium">Focus</span>
+              <span className="hidden sm:inline">Focus</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="wellness" 
-              className="tab-trigger-enhanced flex-col gap-1 h-12"
-            >
+            <TabsTrigger value="wellness" className="flex items-center gap-2 text-sm">
               <Heart className="h-4 w-4" />
-              <span className="text-xs font-medium">Wellness</span>
+              <span className="hidden sm:inline">Wellness</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="creative" 
-              className="tab-trigger-enhanced flex-col gap-1 h-12"
-            >
+            <TabsTrigger value="creative" className="flex items-center gap-2 text-sm">
               <Wand2 className="h-4 w-4" />
-              <span className="text-xs font-medium">Creative</span>
+              <span className="hidden sm:inline">Creative</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="dashboard" className="space-relaxed animate-fade-in">
-            <div className="grid-dashboard">
-              {/* Welcome Card */}
-              <Card className="lg:col-span-8 card-glass">
-                <CardHeader>
-                  <div className="flex-between">
-                    <div>
-                      <CardTitle className="text-headline mb-2">
-                        Welcome back, {user?.email?.split('@')[0] || 'User'}! 👋
-                      </CardTitle>
-                      <CardDescription className="text-subtitle">
-                        Here's your productivity overview for today
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="status-dot status-online"></div>
-                      <span className="text-sm text-success font-medium">All systems active</span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-content">
-                  <MotivationalQuote />
-                  
-                  {/* Progress Overview */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-tight">
-                      <div className="flex-between mb-2">
-                        <span className="text-sm font-medium">Daily Progress</span>
-                        <span className="text-sm text-muted-foreground">68%</span>
-                      </div>
-                      <div className="progress-enhanced">
-                        <div className="progress-bar" style={{ width: '68%' }}></div>
-                      </div>
-                    </div>
-                    <div className="space-tight">
-                      <div className="flex-between mb-2">
-                        <span className="text-sm font-medium">Weekly Goals</span>
-                        <span className="text-sm text-muted-foreground">4/6</span>
-                      </div>
-                      <div className="progress-enhanced">
-                        <div className="progress-bar" style={{ width: '67%' }}></div>
-                      </div>
-                    </div>
-                    <div className="space-tight">
-                      <div className="flex-between mb-2">
-                        <span className="text-sm font-medium">Focus Score</span>
-                        <span className="text-sm text-muted-foreground">85%</span>
-                      </div>
-                      <div className="progress-enhanced">
-                        <div className="progress-bar" style={{ width: '85%' }}></div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Quick Stats Sidebar */}
-              <Card className="lg:col-span-4 card-glass">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5 text-primary" />
-                    Today's Activity
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-content">
-                  {stats.map((stat, index) => {
-                    const Icon = stat.icon;
-                    return (
-                      <div key={index} className="flex-between p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className={cn("p-2 rounded-lg bg-background shadow-subtle", stat.color)}>
-                            <Icon className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <p className="font-semibold">{stat.value}</p>
-                            <p className="text-xs text-muted-foreground">{stat.label}</p>
-                          </div>
+          <TabsContent value="dashboard" className="animate-fade-in">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Content */}
+              <div className="lg:col-span-2 space-md">
+                <MotivationalQuote />
+                
+                {/* Today's Progress */}
+                <Card className="card-base">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Today's Progress</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-sm">
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex-between mb-2">
+                          <span className="text-sm font-medium">Daily Tasks</span>
+                          <span className="text-sm text-muted-foreground">8/12</span>
                         </div>
-                        <Badge variant="secondary" className="badge-enhanced text-success">
-                          {stat.trend}
-                        </Badge>
+                        <div className="progress-bar">
+                          <div className="progress-fill" style={{ width: '67%' }}></div>
+                        </div>
                       </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
+                      <div>
+                        <div className="flex-between mb-2">
+                          <span className="text-sm font-medium">Focus Time</span>
+                          <span className="text-sm text-muted-foreground">2.5h/4h</span>
+                        </div>
+                        <div className="progress-bar">
+                          <div className="progress-fill" style={{ width: '63%' }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex-between mb-2">
+                          <span className="text-sm font-medium">Weekly Goals</span>
+                          <span className="text-sm text-muted-foreground">4/6</span>
+                        </div>
+                        <div className="progress-bar">
+                          <div className="progress-fill" style={{ width: '67%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-              {/* Feature Highlights */}
-              <div className="lg:col-span-12">
-                <div className="grid-responsive">
-                  {features.map((feature, index) => (
-                    <Card key={index} className="card-interactive group animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                      <CardHeader className="space-component">
-                        <div className="flex-between">
-                          <div className={cn(
-                            "flex h-14 w-14 items-center justify-center rounded-2xl shadow-medium transition-all duration-300",
-                            "group-hover:shadow-glow group-hover:scale-110",
-                            feature.color === 'primary' && "bg-gradient-primary",
-                            feature.color === 'focus' && "bg-gradient-to-br from-focus to-focus-glow",
-                            feature.color === 'success' && "bg-gradient-to-br from-success to-success/80",
-                            feature.color === 'warning' && "bg-gradient-to-br from-warning to-warning/80"
-                          )}>
-                            {React.cloneElement(feature.icon, { className: "h-6 w-6 text-white" })}
+              {/* Sidebar */}
+              <div className="space-md">
+                {/* Activity Summary */}
+                <Card className="card-base">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-primary" />
+                      Activity
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-sm">
+                    {stats.map((stat, index) => {
+                      const Icon = stat.icon;
+                      return (
+                        <div key={index} className="flex-between p-3 rounded-lg bg-muted/30">
+                          <div className="flex items-center gap-3">
+                            <div className={cn("p-1.5 rounded-md bg-background", stat.color)}>
+                              <Icon className="h-3 w-3" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">{stat.value}</p>
+                              <p className="text-xs text-muted-foreground">{stat.label}</p>
+                            </div>
                           </div>
-                          <Badge variant="secondary" className="badge-enhanced">
-                            {feature.badge}
+                          <Badge variant="outline" className="text-xs">
+                            {stat.trend}
                           </Badge>
                         </div>
-                        <div className="space-tight">
-                          <h3 className="text-subtitle group-hover:text-primary transition-colors">
-                            {feature.title}
-                          </h3>
-                          <p className="text-caption leading-relaxed">
-                            {feature.description}
-                          </p>
-                        </div>
-                      </CardHeader>
-                    </Card>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+
+                {/* Quick Insights */}
+                <Card className="card-base">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Insights</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-sm">
+                    <div className="space-y-3">
+                      <div className="p-3 rounded-lg bg-success/10 border border-success/20">
+                        <p className="text-sm font-medium text-success">Great momentum!</p>
+                        <p className="text-xs text-muted-foreground">You're 20% ahead of last week</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                        <p className="text-sm font-medium text-primary">Peak focus time</p>
+                        <p className="text-xs text-muted-foreground">9-11 AM works best for you</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="assistant" className="space-relaxed animate-fade-in">
-            <div className="grid-dashboard">
-              <div className="lg:col-span-8">
+          <TabsContent value="assistant" className="animate-fade-in">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2">
                 <VoiceAgent />
               </div>
-              <div className="lg:col-span-4">
+              <div>
                 <NotesManager />
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="tasks" className="space-relaxed animate-fade-in">
-            <div className="grid-dashboard">
-              <div className="lg:col-span-8">
-                <TodoManager />
-              </div>
-              <div className="lg:col-span-4">
-                <AITaskSuggestions 
-                  taskTitle="Daily Planning"
-                  onApplySuggestion={(suggestion) => {
-                    console.log('Applied suggestion:', suggestion);
-                  }}
-                />
-              </div>
-            </div>
+          <TabsContent value="tasks" className="animate-fade-in">
+            <TodoManager />
           </TabsContent>
 
-          <TabsContent value="focus" className="space-relaxed animate-fade-in">
-            <div className="grid-dashboard">
-              <div className="lg:col-span-8">
+          <TabsContent value="focus" className="animate-fade-in">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2">
                 <FocusTimer />
               </div>
-              <div className="lg:col-span-4">
+              <div>
                 <GoalTracker />
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="wellness" className="space-relaxed animate-fade-in">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-              <Card className="card-glass">
+          <TabsContent value="wellness" className="animate-fade-in">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="card-base">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Heart className="h-5 w-5 text-warning" />
@@ -463,44 +344,42 @@ const Index = () => {
                     Track your mood, energy, and overall well-being
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-content">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center p-4 rounded-xl bg-success/10 border border-success/20">
-                        <p className="text-2xl font-bold text-success">😊</p>
-                        <p className="text-sm font-medium">Current Mood</p>
-                        <p className="text-xs text-muted-foreground">Good</p>
-                      </div>
-                      <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/20">
-                        <p className="text-2xl font-bold text-primary">85%</p>
-                        <p className="text-sm font-medium">Energy Level</p>
-                        <p className="text-xs text-muted-foreground">High</p>
-                      </div>
+                <CardContent className="space-md">
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="text-center p-4 rounded-xl bg-success/10 border border-success/20">
+                      <p className="text-2xl mb-2">😊</p>
+                      <p className="text-sm font-medium">Current Mood</p>
+                      <p className="text-xs text-muted-foreground">Good</p>
                     </div>
-                    <MoodTracker />
+                    <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/20">
+                      <p className="text-2xl font-bold text-primary mb-2">85%</p>
+                      <p className="text-sm font-medium">Energy Level</p>
+                      <p className="text-xs text-muted-foreground">High</p>
+                    </div>
                   </div>
+                  <MoodTracker />
                 </CardContent>
               </Card>
               <MotivationalQuote />
             </div>
           </TabsContent>
 
-          <TabsContent value="creative" className="space-relaxed animate-fade-in">
+          <TabsContent value="creative" className="animate-fade-in">
             <CreativeMode />
           </TabsContent>
         </Tabs>
 
         {/* Floating Action Button */}
-        <div className="fixed bottom-8 right-8 z-40">
+        <div className="fixed bottom-6 right-6 z-40">
           <Button
             size="lg"
-            className="h-16 w-16 rounded-full bg-gradient-primary shadow-xl hover:shadow-glow animate-float btn-primary"
+            className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
             onClick={() => setActiveTab('assistant')}
           >
             <Mic className="h-6 w-6" />
           </Button>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

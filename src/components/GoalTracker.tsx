@@ -223,23 +223,15 @@ export const GoalTracker = () => {
 
       {/* Add Goal Form */}
       {showAddForm && (
-        <Card className="p-6 border-2 border-primary/20 animate-slide-in-up">
+        <Card className="card-base border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-lg">Create New Goal</CardTitle>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Create New Goal</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={generateAISuggestions}
-                className="text-xs"
-              >
-                <Lightbulb className="w-3 h-3 mr-1" />
-                AI Tips
-              </Button>
-            </div>
 
             {aiSuggestions.length > 0 && (
-              <Card className="p-4 bg-accent/20 border-accent">
+              <Card className="p-4 bg-primary/5 border-primary/20">
                 <h4 className="text-sm font-medium mb-2 flex items-center">
                   <Lightbulb className="w-4 h-4 mr-1" />
                   AI Suggestions for Success
@@ -256,14 +248,13 @@ export const GoalTracker = () => {
               placeholder="What's your goal?"
               value={newGoal.title}
               onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
-              className="text-lg"
             />
             
             <Textarea
               placeholder="Describe your goal in detail..."
               value={newGoal.description}
               onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
-              className="min-h-[100px]"
+              className="min-h-[80px]"
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -321,13 +312,15 @@ export const GoalTracker = () => {
               </Button>
             </div>
           </div>
+          </CardContent>
         </Card>
       )}
 
       {/* Goals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {goals.map((goal) => (
-          <Card key={goal.id} className="p-6 hover:shadow-lg transition-all duration-300 animate-fade-in">
+          <Card key={goal.id} className="card-interactive">
+            <CardContent className="p-6">
             <div className="space-y-4">
               {/* Header */}
               <div className="flex items-start justify-between">
@@ -351,7 +344,9 @@ export const GoalTracker = () => {
 
               {/* Progress Bar */}
               <div className="space-y-2">
-                <Progress value={goal.progress} className="h-3" />
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: `${goal.progress}%` }}></div>
+                </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>Progress</span>
                   <span className="flex items-center">
@@ -388,19 +383,24 @@ export const GoalTracker = () => {
                 </Button>
               </div>
             </div>
+            </CardContent>
           </Card>
         ))}
       </div>
 
       {goals.length === 0 && (
-        <Card className="p-8 text-center">
-          <div className="space-y-2">
-            <Target className="w-12 h-12 mx-auto text-muted-foreground/50" />
-            <h3 className="text-lg font-medium text-muted-foreground">No goals yet</h3>
-            <p className="text-sm text-muted-foreground">
+        <Card className="card-base">
+          <CardContent className="p-12 text-center">
+            <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+            <h3 className="text-lg font-medium mb-2">No goals yet</h3>
+            <p className="text-muted-foreground mb-4">
               Set your first goal and start your journey to success
             </p>
-          </div>
+            <Button onClick={() => setShowAddForm(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First Goal
+            </Button>
+          </CardContent>
         </Card>
       )}
     </div>

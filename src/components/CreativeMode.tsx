@@ -266,9 +266,9 @@ export const CreativeMode = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card>
+      <Card className="card-base">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="text-lg flex items-center gap-2">
             <Wand2 className="h-5 w-5" />
             Creative Mode - Voice Dictation & AI Writing
           </CardTitle>
@@ -276,13 +276,13 @@ export const CreativeMode = () => {
       </Card>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column - Input & Processing */}
         <div className="space-y-6">
           {/* Voice Input */}
-          <Card>
+          <Card className="card-base">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2">
                 <Mic className="h-4 w-4" />
                 Voice Dictation
               </CardTitle>
@@ -292,19 +292,13 @@ export const CreativeMode = () => {
                 onTranscription={handleVoiceTranscription}
                 placeholder="Click to start voice dictation"
               />
-              {isTranscribing && (
-                <div className="flex items-center justify-center mt-4">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  <span>Transcribing audio...</span>
-                </div>
-              )}
             </CardContent>
           </Card>
 
           {/* Manual Text Input */}
-          <Card>
+          <Card className="card-base">
             <CardHeader>
-              <CardTitle>Document Details</CardTitle>
+              <CardTitle className="text-base">Document Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Input
@@ -317,7 +311,7 @@ export const CreativeMode = () => {
                 placeholder="Type or paste your raw text here..."
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
-                rows={8}
+                rows={6}
               />
 
               <div className="grid grid-cols-2 gap-4">
@@ -385,9 +379,9 @@ export const CreativeMode = () => {
         {/* Right Column - Output & Actions */}
         <div className="space-y-6">
           {/* Cleaned Output */}
-          <Card>
+          <Card className="card-base">
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {getOutputTypeIcon(outputType)}
                   Cleaned Content
@@ -407,8 +401,8 @@ export const CreativeMode = () => {
                 value={cleanedText}
                 onChange={(e) => setCleanedText(e.target.value)}
                 placeholder="AI-cleaned content will appear here..."
-                rows={12}
-                className="font-mono text-sm"
+                rows={10}
+                className="text-sm"
               />
 
               <div className="flex flex-wrap gap-2">
@@ -468,9 +462,9 @@ export const CreativeMode = () => {
           </Card>
 
           {/* Recent Documents */}
-          <Card>
+          <Card className="card-base">
             <CardHeader>
-              <CardTitle>Recent Documents</CardTitle>
+              <CardTitle className="text-base">Recent Documents</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -480,7 +474,7 @@ export const CreativeMode = () => {
                   documents.slice(0, 5).map((doc) => (
                     <div 
                       key={doc.id}
-                      className="flex items-center justify-between p-2 rounded-lg border hover:bg-muted/50 cursor-pointer"
+                      className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
                       onClick={() => {
                         setCurrentDocument(doc);
                         setTitle(doc.title || 'Untitled');

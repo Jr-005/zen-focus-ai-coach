@@ -48,8 +48,6 @@ export const TodoManager = () => {
   });
 
   const [showAddForm, setShowAddForm] = useState(false);
-  const [showVoiceInput, setShowVoiceInput] = useState(false);
-  const [showAISuggestions, setShowAISuggestions] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -301,49 +299,35 @@ export const TodoManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Progress */}
-      <Card className="card-glass">
+      {/* Clean Header */}
+      <Card className="card-base">
         <CardContent className="p-6">
-          <div className="flex-between mb-6">
+          <div className="flex-between mb-4">
             <div>
-              <h2 className="text-headline text-gradient-primary mb-2">Your Tasks</h2>
-              <p className="text-subtitle text-muted-foreground">
+              <h2 className="text-title mb-1">Your Tasks</h2>
+              <p className="text-caption">
                 {completedTasks} of {totalTasks} tasks completed
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-1">
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-2xl font-bold text-primary">
                   {totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%
                 </div>
-                <div className="text-xs text-muted-foreground">Progress</div>
+                <div className="text-xs text-muted-foreground">Complete</div>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowVoiceInput(!showVoiceInput)}
-                  className="button-enhanced"
-                >
-                  <Mic className="w-4 h-4 mr-2" />
-                  Voice
-                </Button>
-                <Button onClick={() => setShowAddForm(!showAddForm)} className="button-enhanced">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Task
-                </Button>
-              </div>
+              <Button onClick={() => setShowAddForm(!showAddForm)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Task
+              </Button>
             </div>
           </div>
 
-          {/* Enhanced Progress Bar */}
-          <div className="space-tight">
-            <div className="flex-between text-sm">
-              <span className="font-medium">Daily Progress</span>
-              <span className="text-muted-foreground">{completedTasks}/{totalTasks}</span>
-            </div>
-            <div className="progress-enhanced">
+          {/* Progress Bar */}
+          <div>
+            <div className="progress-bar">
               <div 
-                className="progress-bar"
+                className="progress-fill"
                 style={{ width: `${totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0}%` }}
               />
             </div>
@@ -355,54 +339,32 @@ export const TodoManager = () => {
       <NaturalLanguageTaskInput
         onTaskParsed={handleNaturalLanguageTask}
         userGoals={goals.map(g => ({ id: g.id, title: g.title }))}
-        className="animate-slide-in-up"
       />
-
-      {/* Voice Input */}
-      {showVoiceInput && (
-        <VoiceInput
-          onTranscription={handleVoiceTranscription}
-          placeholder="Record your task description"
-          className="animate-slide-in-up"
-        />
-      )}
 
       {/* Add Task Form */}
       {showAddForm && (
-        <Card className="card-glass border-primary/20 animate-slide-in-up">
-          <CardContent className="p-6 space-content">
-            <div className="flex-between mb-4">
-              <h3 className="text-title">Create New Task</h3>
-              <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
-                ✕
-              </Button>
-            </div>
+        <Card className="card-base border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-lg">Create New Task</CardTitle>
+          </CardHeader>
+          <CardContent className="space-sm">
             
             <Input
               placeholder="What would you like to accomplish?"
               value={newTask.title}
               onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-              className="input-enhanced text-lg"
+              className="input-base"
             />
             <Textarea
               placeholder="Add a description (optional)"
               value={newTask.description}
               onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-              className="min-h-[100px] rounded-xl border-border/50 bg-background/50"
-            />
-            
-            {/* AI Suggestions */}
-            <AITaskSuggestions
-              taskTitle={newTask.title}
-              taskDescription={newTask.description}
-              userGoals={goals.map(g => g.title)}
-              userContext={getUserContext()}
-              onApplySuggestion={handleAISuggestions}
+              className="min-h-[80px]"
             />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select value={newTask.priority} onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}>
-                <SelectTrigger className="rounded-xl border-border/50 bg-background/50">
+                <SelectTrigger>
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent>
@@ -415,14 +377,13 @@ export const TodoManager = () => {
                 type="date"
                 value={newTask.dueDate}
                 onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                className="input-enhanced"
               />
             </div>
             <div className="flex gap-3">
-              <Button onClick={addTask} className="flex-1 button-enhanced">
+              <Button onClick={addTask} className="flex-1">
                 Create Task
               </Button>
-              <Button variant="outline" onClick={() => setShowAddForm(false)} className="button-enhanced">
+              <Button variant="outline" onClick={() => setShowAddForm(false)}>
                 Cancel
               </Button>
             </div>
@@ -438,7 +399,7 @@ export const TodoManager = () => {
             <Card
               key={task.id}
               className={cn(
-                "card-interactive animate-fade-in",
+                "card-interactive",
                 task.completed ? "opacity-60" : ""
               )}
             >
@@ -491,6 +452,20 @@ export const TodoManager = () => {
           );
         })}
       </div>
+
+      {tasks.length === 0 && !loading && (
+        <Card className="card-base">
+          <CardContent className="p-12 text-center">
+            <CheckSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+            <h3 className="text-lg font-medium mb-2">No tasks yet</h3>
+            <p className="text-muted-foreground mb-4">Create your first task to get started</p>
+            <Button onClick={() => setShowAddForm(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Your First Task
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

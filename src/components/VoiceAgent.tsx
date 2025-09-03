@@ -221,7 +221,7 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
   };
 
   return (
-    <Card className="flex flex-col h-[600px] max-w-2xl mx-auto">
+    <Card className="card-base flex flex-col h-[600px]">
       {/* Header */}
       <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
         <div className="flex items-center space-x-2">
@@ -231,7 +231,7 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
             </AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle className="text-lg">ZenVA Assistant</CardTitle>
+            <CardTitle className="text-base">ZenVA Assistant</CardTitle>
             <CardDescription className="text-xs">
               {isListening ? 'Listening...' : isProcessing ? 'Processing...' : isSpeaking ? 'Speaking...' : 'Ready to help'}
             </CardDescription>
@@ -273,7 +273,7 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
             
             <div
               className={cn(
-                "max-w-[80%] rounded-lg p-3",
+                "max-w-[75%] rounded-xl p-3",
                 message.type === 'user'
                   ? 'bg-primary text-primary-foreground ml-12'
                   : 'bg-muted'
@@ -297,7 +297,7 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
 
         {currentTranscription && (
           <div className="flex justify-end space-x-3">
-            <div className="max-w-[80%] rounded-lg p-3 bg-primary/20 ml-12">
+            <div className="max-w-[75%] rounded-xl p-3 bg-primary/20 ml-12">
               <p className="text-sm italic">{currentTranscription}</p>
             </div>
             <Avatar className="w-8 h-8">
@@ -320,13 +320,13 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleTextSubmit())}
-            className="flex-1 min-h-[44px] max-h-32 resize-none"
+            className="flex-1 min-h-[44px] max-h-24 resize-none rounded-xl"
           />
           <Button 
             onClick={handleTextSubmit} 
             disabled={!inputText.trim() || isProcessing}
             size="icon"
-            className="h-11 w-11"
+            className="h-11 w-11 rounded-xl"
           >
             <Send className="w-4 h-4" />
           </Button>
@@ -338,7 +338,7 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
             onClick={isListening ? stopListening : startListening}
             disabled={isProcessing}
             className={cn(
-              "w-16 h-16 rounded-full",
+              "w-14 h-14 rounded-full",
               isListening
                 ? "bg-destructive hover:bg-destructive/90 animate-pulse"
                 : "bg-primary hover:bg-primary/90"
@@ -364,7 +364,7 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
             variant="outline"
             size="icon"
             onClick={() => setIsSpeaking(!isSpeaking)}
-            className="w-12 h-12 rounded-full"
+            className="w-10 h-10 rounded-full"
           >
             {isSpeaking ? (
               <VolumeX className="w-5 h-5" />

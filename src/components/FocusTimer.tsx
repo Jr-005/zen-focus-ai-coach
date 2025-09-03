@@ -200,11 +200,11 @@ export const FocusTimer = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card className="card-glass text-center">
+      {/* Clean Header */}
+      <Card className="card-base text-center">
         <CardContent className="p-6">
-          <h2 className="text-headline text-gradient-focus mb-3">Focus Mode</h2>
-          <p className="text-subtitle text-muted-foreground">
+          <h2 className="text-title text-gradient-focus mb-2">Focus Mode</h2>
+          <p className="text-caption">
             Pomodoro Technique • Session {currentSession} of {totalSessions}
           </p>
         </CardContent>
@@ -212,30 +212,30 @@ export const FocusTimer = () => {
 
       {/* Session Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="card-interactive text-center">
+        <Card className="card-base text-center">
           <CardContent className="p-6">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary-glow/20 flex items-center justify-center">
+            <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-primary/10 flex items-center justify-center">
               <CheckSquare className="w-6 h-6 text-primary" />
             </div>
-            <div className="text-3xl font-bold text-primary mb-1">{sessionsCompleted}</div>
+            <div className="text-2xl font-bold text-primary mb-1">{sessionsCompleted}</div>
             <div className="text-sm text-muted-foreground">Sessions Done</div>
           </CardContent>
         </Card>
-        <Card className="card-interactive text-center">
+        <Card className="card-base text-center">
           <CardContent className="p-6">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-focus/20 to-focus-glow/20 flex items-center justify-center">
+            <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-focus/10 flex items-center justify-center">
               <Target className="w-6 h-6 text-focus" />
             </div>
-            <div className="text-3xl font-bold text-focus mb-1">{currentSession}</div>
+            <div className="text-2xl font-bold text-focus mb-1">{currentSession}</div>
             <div className="text-sm text-muted-foreground">Current Session</div>
           </CardContent>
         </Card>
-        <Card className="card-interactive text-center">
+        <Card className="card-base text-center">
           <CardContent className="p-6">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-success/20 to-success/10 flex items-center justify-center">
+            <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-success/10 flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-success" />
             </div>
-            <div className="text-3xl font-bold text-success mb-1">{Math.round(getProgress())}%</div>
+            <div className="text-2xl font-bold text-success mb-1">{Math.round(getProgress())}%</div>
             <div className="text-sm text-muted-foreground">Progress</div>
           </CardContent>
         </Card>
@@ -243,53 +243,31 @@ export const FocusTimer = () => {
 
       {/* Main Timer */}
       <Card className={cn(
-        "card-glass relative overflow-hidden transition-all duration-500 shadow-xl",
-        sessionType === 'focus' && isActive && "shadow-focus animate-focus-pulse",
-        sessionType !== 'focus' && isActive && "shadow-glow"
+        "card-base relative overflow-hidden transition-all duration-300",
+        isActive && "border-primary/30 shadow-lg"
       )}>
-        <CardContent className="p-12 text-center relative z-10">
-          {/* Session Type Selector */}
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <div className={cn(
-              "p-3 rounded-2xl shadow-medium transition-all duration-300",
-              sessionType === 'focus' ? "bg-gradient-to-br from-focus to-focus-glow" : "bg-gradient-to-br from-success to-success/80"
-            )}>
-              {getSessionIcon()}
-            </div>
-            <span className="text-xl font-semibold capitalize">
-              {sessionType.replace('-', ' ')} Session
-            </span>
-          </div>
-
-          {/* Timer Display */}
-          <div className="space-y-8">
-            <div className={cn(
-              "text-8xl md:text-9xl font-bold transition-all duration-500 tracking-tight",
-              sessionType === 'focus' ? "text-gradient-focus" : "text-gradient-primary"
-            )}>
+        <CardContent className="p-8 text-center">
+          <div className="space-y-6">
+            {/* Session Type */}
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <div className={cn(
+                "p-2 rounded-lg",
+                sessionType === 'focus' ? "bg-focus text-focus-foreground" : "bg-success text-success-foreground"
+              )}>
+                {getSessionIcon()}
+            <div className="text-6xl md:text-7xl font-bold mb-6 text-primary">
               {formatTime(timeLeft)}
             </div>
-            
-            {/* Progress Ring */}
-            <div className="relative w-40 h-40 mx-auto">
-              <div className="progress-enhanced h-4">
+
+            {/* Progress Bar */}
+            <div className="max-w-md mx-auto mb-6">
+              <div className="progress-bar h-3">
                 <div 
-                  className={cn(
-                    "progress-bar transition-all duration-1000",
-                    sessionType === 'focus' ? "bg-gradient-to-r from-focus to-focus-glow" : "bg-gradient-to-r from-success to-success/80"
-                  )}
+                  className="progress-fill"
                   style={{ width: `${getProgress()}%` }}
                 />
               </div>
             </div>
-          </div>
-
-          {/* Motivational Message */}
-          <div className="space-tight mb-8">
-            <p className="text-lg text-muted-foreground italic font-medium">
-              {getRandomMessage()}
-            </p>
-          </div>
 
           {/* Controls */}
           <div className="flex items-center justify-center gap-6">
@@ -330,7 +308,7 @@ export const FocusTimer = () => {
       <div className="grid grid-cols-3 gap-3">
         {(Object.keys(sessionDurations) as Array<keyof typeof sessionDurations>).map((type) => (
           <Button
-            key={type}
+      <Card className="card-base">
             variant={sessionType === type ? "default" : "outline"}
             onClick={() => changeSessionType(type)}
             className={cn(
@@ -338,36 +316,20 @@ export const FocusTimer = () => {
               sessionType === type && "bg-gradient-primary shadow-medium"
             )}
             disabled={isActive}
-          >
-            {type === 'short-break' ? 'Short Break' : 
-             type === 'long-break' ? 'Long Break' : type}
-          </Button>
-        ))}
-      </div>
-
-      {/* Tips */}
-      <Card className="card-glass bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20">
-        <CardContent className="p-6">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-warning" />
-            Focus Tips
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-muted-foreground">
-            <div className="flex items-start gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-              <span>Remove distractions and close unnecessary tabs</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-              <span>Take deep breaths during breaks</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-              <span>Stay hydrated and maintain good posture</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-              <span>Use breaks to move your body and rest your eyes</span>
+            <div className="flex items-center justify-center gap-4">
+              <Button variant="outline" size="icon" onClick={resetTimer}>
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={toggleTimer}
+                size="lg"
+                className="w-16 h-16 rounded-full"
+              >
+                {isActive ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+              </Button>
+              <Button variant="outline" size="icon" onClick={requestNotificationPermission}>
+                <Settings className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -375,3 +337,4 @@ export const FocusTimer = () => {
     </div>
   );
 };
+            className="capitalize text-sm"

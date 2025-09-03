@@ -70,7 +70,7 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({
 
   return (
     <div className={className}>
-      <Card className="border-dashed border-2 border-primary/20 hover:border-primary/40 transition-colors">
+      <Card className="card-base border-dashed border-2 border-primary/20 hover:border-primary/30 transition-colors">
         <CardContent className="p-4">
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-primary mb-2">
@@ -100,7 +100,7 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({
             </div>
 
             {parsedTask && (
-              <Card className="bg-muted/50">
+              <Card className="bg-muted/30 border-border/50">
                 <CardContent className="p-4">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -109,7 +109,6 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({
                         <Button 
                           onClick={handleUseTask}
                           size="sm"
-                          className="bg-primary hover:bg-primary/90"
                         >
                           Use Task
                         </Button>
