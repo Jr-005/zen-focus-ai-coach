@@ -15,7 +15,8 @@ import { FocusTimer } from '@/components/FocusTimer';
 import { GoalTracker } from '@/components/GoalTracker';
 import { MoodTracker } from '@/components/MoodTracker';
 import { MotivationalQuote } from '@/components/MotivationalQuote';
-import { VoiceTestComponent } from '@/components/VoiceTestComponent';
+import { VoiceAgent } from '@/components/VoiceAgent';
+
 import NotesManager from '@/components/NotesManager';
 import { AITaskSuggestions } from '@/components/AITaskSuggestions';
 import { CreativeMode } from '@/components/CreativeMode';
@@ -415,7 +416,7 @@ const Index = () => {
           <TabsContent value="assistant" className="space-relaxed animate-fade-in">
             <div className="grid-dashboard">
               <div className="lg:col-span-8">
-                <VoiceTestComponent />
+                <VoiceAgent />
               </div>
               <div className="lg:col-span-4">
                 <NotesManager />

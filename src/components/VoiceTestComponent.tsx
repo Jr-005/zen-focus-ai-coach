@@ -67,7 +67,7 @@ export const VoiceTestComponent = () => {
               content: "Say hello and tell me if you're working properly. Keep it short."
             }
           ],
-          model: "llama3-groq-70b-8192-tool-use-preview",
+          model: "llama-3.1-70b-versatile",
           temperature: 0.7
         }
       });
