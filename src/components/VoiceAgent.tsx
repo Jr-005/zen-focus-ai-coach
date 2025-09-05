@@ -52,8 +52,16 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
 
   const startListening = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100,
+        } 
+      });
+      mediaRecorderRef.current = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
       audioChunksRef.current = [];
 
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -61,12 +69,20 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
       };
 
       mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
         await transcribeAudio(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorderRef.current.start();
+      // Auto-stop recording after 5 minutes to prevent memory issues
+      setTimeout(() => {
+        if (isListening) {
+          stopListening();
+          toast.warning('Recording stopped automatically after 5 minutes');
+        }
+      }, 5 * 60 * 1000);
+
+      mediaRecorderRef.current.start(100); // Collect data every 100ms
       setIsListening(true);
       toast.success('Listening... Speak now');
     } catch (error) {
@@ -85,8 +101,22 @@ export const VoiceAgent = ({ onTaskCreated, onReminderSet, onSessionStarted }: V
   const transcribeAudio = async (audioBlob: Blob) => {
     setIsProcessing(true);
     try {
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      // Check audio size (cap at 25MB to prevent memory issues)
+      if (audioBlob.size > 25 * 1024 * 1024) {
+        toast.error('Audio file too large. Please record shorter audio.');
+        return;
+      }
+
+      // Use FileReader for safer base64 conversion
+      const base64Audio = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result as string;
+          resolve(base64.split(',')[1]); // Remove data URL prefix
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(audioBlob);
+      });
 
       const { data, error } = await supabase.functions.invoke('groq-whisper', {
         body: {

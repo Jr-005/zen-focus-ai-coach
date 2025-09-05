@@ -139,9 +139,22 @@ export const useAI = () => {
   const transcribeAudio = async (audioBlob: Blob): Promise<string | null> => {
     setLoading(true);
     try {
-      // Convert blob to base64
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      // Check audio size (cap at 25MB to prevent memory issues)
+      if (audioBlob.size > 25 * 1024 * 1024) {
+        toast.error('Audio file too large. Please use shorter audio.');
+        return null;
+      }
+
+      // Use FileReader for safer base64 conversion
+      const base64Audio = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result as string;
+          resolve(base64.split(',')[1]); // Remove data URL prefix
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(audioBlob);
+      });
 
       const { data, error } = await supabase.functions.invoke('groq-whisper', {
         body: {

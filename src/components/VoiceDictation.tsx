@@ -87,20 +87,32 @@ export const VoiceDictation = ({
       return;
     }
 
+    // Check audio size (cap at 25MB to prevent memory issues)
+    if (audioBlob.size > 25 * 1024 * 1024) {
+      toast.error('Audio file too large. Please record shorter audio.');
+      return;
+    }
+
     setIsTranscribing(true);
     setTranscriptionProgress(0);
 
     try {
-      // Convert blob to base64
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      // Use FileReader for safer base64 conversion
+      const base64Audio = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result as string;
+          resolve(base64.split(',')[1]); // Remove data URL prefix
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(audioBlob);
+      });
 
       // Use Groq Whisper for transcription
-      const { data, error } = await supabase.functions.invoke('whisper-transcription', {
+      const { data, error } = await supabase.functions.invoke('groq-whisper', {
         body: {
           audioData: base64Audio,
-          language: 'en',
-          model: 'whisper-large-v3'
+          language: 'en'
         }
       });
 
@@ -115,7 +127,9 @@ export const VoiceDictation = ({
       // Auto-send transcription if callback provided
       onTranscription(data.transcription);
       
-      toast.success(`Transcribed ${data.wordCount} words with ${Math.round((data.confidence || 0.8) * 100)}% confidence`);
+      // Calculate word count from transcription
+      const wordCount = data.transcription.trim().split(/\s+/).length;
+      toast.success(`Transcribed ${wordCount} words with ${Math.round((data.confidence || 0.95) * 100)}% confidence`);
     } catch (error) {
       console.error('Transcription error:', error);
       toast.error('Failed to transcribe audio');

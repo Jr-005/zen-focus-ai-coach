@@ -47,6 +47,14 @@ export const useVoiceRecording = () => {
       setIsRecording(true);
       toast.success('Recording started');
 
+      // Auto-stop recording after 5 minutes to prevent memory issues
+      setTimeout(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+          mediaRecorderRef.current.stop();
+          toast.warning('Recording stopped automatically after 5 minutes');
+        }
+      }, 5 * 60 * 1000);
+
     } catch (error) {
       console.error('Error starting recording:', error);
       toast.error('Failed to start recording. Please check microphone permissions.');
